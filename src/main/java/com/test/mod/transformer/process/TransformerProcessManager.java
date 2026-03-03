@@ -23,21 +23,22 @@ public class TransformerProcessManager {
         add(new InjectProcess());
         add(new HookProcess());
         add(new ASMProcess());
+       // add(new AccessorProcess());
     }
     public void matchField(Field field,
-                           ClassNode classNode, ClassNode mixinClassNode, ITransformer iTransformer,Class<?> targetClas) {
+                           ClassNode classNode, ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas) {
 
         matchMember(field, classNode,  mixinClassNode,iTransformer,targetClas);
     }
 
     public void matchMethod(Method method,
-                            ClassNode classNode, ClassNode mixinClassNode, ITransformer iTransformer,Class<?> targetClas) {
+                            ClassNode classNode, ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas) {
 
         matchMember(method, classNode, mixinClassNode,iTransformer,targetClas);
     }
     private <V> void matchMember(
             V member,
-            ClassNode targetClassNode, ClassNode mixinClassNode, ITransformer iTransformer,Class<?> targetClas
+            ClassNode targetClassNode, ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas
     ) {
         for (TransformerProcess<?, ?> process : transformerProcesses) {
             if (!process.getTargetType().isAssignableFrom(member.getClass())) {
@@ -63,7 +64,7 @@ public class TransformerProcessManager {
             ClassNode classNode,
             ClassNode mixinClassNode,
             Object member,
-            Annotation annotation, ITransformer iTransformer,Class<?> targetClas
+            Annotation annotation, Class<? extends ITransformer> iTransformer,Class<?> targetClas
     ) {
 
         TransformerProcess<T, V> typedProcess =

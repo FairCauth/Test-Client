@@ -1,6 +1,7 @@
 package com.test.mod.transformer;
 
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.test.mod.ExampleTransformer;
 import com.test.mod.asm.tree.ClassNode;
 import com.test.mod.natives.CoreNative;
@@ -8,8 +9,12 @@ import com.test.mod.transformer.annotation.ClassNameTransformer;
 import com.test.mod.transformer.annotation.ClassTransformer;
 import com.test.mod.transformer.annotation.TransformerMeta;
 import com.test.mod.transformer.process.TransformerProcessManager;
+import com.test.mod.transformer.transformers.GameRendererTransformer;
+import com.test.mod.transformer.transformers.KeyboardHandlerTransformer;
+import com.test.mod.transformer.transformers.RenderSystemTransformer;
 import com.test.mod.transformer.utils.Tools;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,11 +25,15 @@ import java.util.*;
 
 public class TransformerLoader {
     //class name
-    private final Map<String, ITransformer> transformerMap = new HashMap<>();
+    private final Map<String, Class<? extends ITransformer>> transformerMap = new HashMap<>();
     private final TransformerProcessManager transformerProcessManager = new TransformerProcessManager();
 
     public TransformerLoader() {
-        add(new ExampleTransformer());
+        add(
+                ExampleTransformer.class,
+                GameRendererTransformer.class,
+                KeyboardHandlerTransformer.class
+        );
 
         try {
             onTransform();
@@ -39,8 +48,8 @@ public class TransformerLoader {
         int success = 0, error = 0;
         for (String className : keySet) {
             Class<?> targetClass = Class.forName(className);
-            ITransformer transformer = transformerMap.get(className);
-            Class<?> transformerClass = transformer.getClass();
+            Class<? extends ITransformer> transformer = transformerMap.get(className);
+
             ClassNode classNode = null;
             int cnt = 0;
             for (int i = 0; i < 10; i++) {
@@ -50,16 +59,16 @@ public class TransformerLoader {
                     if (classByte == null)
                         throw new TransformerException(className + " transformer getClassBytes error");
                     //获取mixin class字节
-                    byte[] mixinClassByte = CoreNative.getClassBytes(transformerClass);
+                    byte[] mixinClassByte = CoreNative.getClassBytes(transformer);
                     if (mixinClassByte == null)
-                        throw new TransformerException(transformerClass + " [mixin] getClassBytes error");
+                        throw new TransformerException(transformer + " [mixin] getClassBytes error");
 
 
                     classNode = Tools.getClassNode(classByte);
                     ClassNode mixinClassNode = Tools.getClassNode(mixinClassByte);
 
-                    Method[] methods = transformerClass.getDeclaredMethods();
-                    Field[] fields = transformerClass.getDeclaredFields();
+                    Method[] methods = transformer.getDeclaredMethods();
+                    Field[] fields = transformer.getDeclaredFields();
 
 
                     handleTransformerFields(fields, classNode, mixinClassNode,transformer,targetClass);
@@ -77,11 +86,11 @@ public class TransformerLoader {
             }
             byte[] newClassByte = Tools.rewriteClass(classNode);
 
-            if(targetClass.equals(Minecraft.class) ) {
-                try (FileOutputStream fos = new FileOutputStream(targetClass.getName() + ".class")) {
-                    fos.write(newClassByte);
-                } catch (IOException ignored) {}
-            }
+//            if(targetClass.equals(RenderSystem.class) ) {
+//                try (FileOutputStream fos = new FileOutputStream(targetClass.getName() + ".class")) {
+//                    fos.write(newClassByte);
+//                } catch (IOException ignored) {}
+//            }
 
             int errorCode = CoreNative.redefineClasses(targetClass, newClassByte);
             if (errorCode != 0) {
@@ -92,8 +101,9 @@ public class TransformerLoader {
             System.out.println(targetClass.getName() + " -> Transform OK " + cnt);
         }
     }
-    private void handleTransformerFields(Field[] fields, ClassNode classNode ,ClassNode mixinClassNode, ITransformer iTransformer,Class<?> targetClas) {
+    private void handleTransformerFields(Field[] fields, ClassNode classNode ,ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas) {
         for (Field field : fields) {
+            System.out.println(field.getName() + " 111111");
             field.setAccessible(true);
             transformerProcessManager.matchField(field, classNode,mixinClassNode,iTransformer,targetClas);
         }
@@ -115,7 +125,7 @@ public class TransformerLoader {
             Method[] methods,
             ClassNode classNode,
             ClassNode mixinClassNode,
-            ITransformer iTransformer,Class<?> targetClas
+            Class<? extends ITransformer> iTransformer,Class<?> targetClas
     ) {
 
         List<Method> sorted = new ArrayList<>(Arrays.asList(methods));
@@ -137,10 +147,11 @@ public class TransformerLoader {
 //            transformerProcessManager.matchMethod(method, classNode,mixinClassNode,iTransformer);
 //        }
 //    }
-    private void add(ITransformer... iTransformers) {
-        for (ITransformer iTransformer : iTransformers) {
-            ClassTransformer clazzAnt = iTransformer.getClass().getAnnotation(ClassTransformer.class);
-            ClassNameTransformer clazzNameAnt = iTransformer.getClass().getAnnotation(ClassNameTransformer.class);
+    @SafeVarargs
+    private void add(Class<? extends ITransformer>... iTransformers) {
+        for (Class<? extends ITransformer> iTransformer : iTransformers) {
+            ClassTransformer clazzAnt = iTransformer.getAnnotation(ClassTransformer.class);
+            ClassNameTransformer clazzNameAnt = iTransformer.getAnnotation(ClassNameTransformer.class);
             if(clazzAnt != null)
                 transformerMap.put(clazzAnt.value().getName(), iTransformer);
 
@@ -148,5 +159,6 @@ public class TransformerLoader {
                 transformerMap.put(clazzNameAnt.value(), iTransformer);
 
         }
+
     }
 }

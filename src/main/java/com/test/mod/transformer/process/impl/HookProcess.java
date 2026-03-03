@@ -21,16 +21,18 @@ public class HookProcess extends TransformerProcess<Hook, Method> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, ITransformer iTransformer, Method method, Hook annotation) {
+    public void process(ClassNode targetClassNode,
+                        ClassNode mixinClassNode,
+                        Class<?> targetClass,
+                        Class<? extends ITransformer> iTransformer,
+                        Method method,
+                        Hook annotation
+    ) {
         String desc = annotation.desc();
 
-        MethodNode targetMethodNode = null;
         MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
-        for (String name : annotation.methodName()) {
-            name = Mapping.get(targetClass, name, desc);
-            targetMethodNode = Tools.getMethod(targetClassNode, desc, name);
-            if (targetMethodNode != null) break;
-        }
+        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, annotation.methodName(), desc);
+
         if (targetMethodNode == null || mixinMethodNode == null)
             throw new TransformerException("targetMethodNode or mixinMethodNode NULL!");
 

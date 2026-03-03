@@ -17,15 +17,17 @@ public class OverwriteProcess extends TransformerProcess<Overwrite, Method> {
     }
 
     @Override
-    public void process(ClassNode classNode, ClassNode mixinClassNode,Class<?> targetClass, ITransformer iTransformer, Method method, Overwrite overwrite) {
+    public void process(ClassNode classNode,
+                        ClassNode mixinClassNode,
+                        Class<?> targetClass,
+                        Class<? extends ITransformer> iTransformer,
+                        Method method,
+                        Overwrite overwrite
+    ) {
         String desc = overwrite.desc();
-        MethodNode targetMethodNode = null;
         MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
-        for (String name : overwrite.methodName()) {
-            name = Mapping.get(targetClass, name, desc);
-            targetMethodNode = Tools.getMethod(classNode, desc, name);
-            if (targetMethodNode != null) break;
-        }
+        MethodNode targetMethodNode = getTargetMethodNode(classNode, targetClass, overwrite.methodName(), desc);
+
         if (targetMethodNode != null && mixinMethodNode != null) {
             //System.out.println("11111111111111111111111111111111 " + method.getName());
             MethodNode newMethod = Tools.cloneMethod(mixinMethodNode);

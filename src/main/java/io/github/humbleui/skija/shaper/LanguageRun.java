@@ -1,0 +1,12 @@
+package io.github.humbleui.skija.shaper;
+
+import lombok.Data;
+import org.jetbrains.annotations.ApiStatus;
+
+@Data
+public class LanguageRun {
+    @ApiStatus.Internal public final int _end;
+
+    /** Should be BCP-47, c locale names may also work. */
+    @ApiStatus.Internal public final String _language;
+}

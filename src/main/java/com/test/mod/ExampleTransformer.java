@@ -14,20 +14,16 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import java.util.ListIterator;
 
 @ClassTransformer(Minecraft.class)
-public class ExampleTransformer implements ITransformer {
+public abstract class ExampleTransformer implements ITransformer {
+
     @Shadow("demo")//final不可进行赋值
     private boolean demo22;
     @Shadow("window")//final
     private Window window;
     @Shadow(value = "getConnection", desc = "()Lnet/minecraft/client/multiplayer/ClientPacketListener;")
-    public ClientPacketListener getConnection() {
-        //相当于接口作用 返回null即可
-        return null;
-    }
+    public abstract ClientPacketListener getConnection();
     @Shadow(value = "debugClientMetricsCancel", desc = "()V")
-    private void debugClientMetricsCancel(){
-
-    }
+    public abstract void debugClientMetricsCancel();
     //Overwrite使用例子
     @Overwrite(methodName = "stop", desc = "()V")
     public void stop() {
@@ -50,7 +46,13 @@ public class ExampleTransformer implements ITransformer {
             ),cancellable = true)
     public void clearLevel(Screen p_91321_,
                            CallbackInfo callbackInfo, @Local(2) ClientPacketListener clientPacketListener) {
+
         clientPacketListener = null;//可对局部变量进行操作
+        String str = "TestDDDDDD";
+        int asf = 12124;
+        double b = 0.01d;
+        System.out.println(asf + b);
+        System.out.println(str);
         //调用类内部方法(Shadow)
         debugClientMetricsCancel();
         ClientPacketListener clientPacketListener1 = getConnection();
@@ -68,7 +70,7 @@ public class ExampleTransformer implements ITransformer {
 
     //ASM使用例子
     @ASM(methodName = "runTick", desc = "(Z)V")
-    public void runTick_asm(MethodNode methodNode){
+    public static void runTick_asm(MethodNode methodNode){
         ListIterator<AbstractInsnNode> iterator = methodNode.instructions.iterator();
         while (iterator.hasNext()) {
             //iterator.add();

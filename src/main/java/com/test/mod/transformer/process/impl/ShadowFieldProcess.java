@@ -19,7 +19,7 @@ public class ShadowFieldProcess extends TransformerProcess<Shadow, Field> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, ITransformer iTransformer, Field field, Shadow annotation) {
+    public void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, Class<? extends ITransformer> iTransformer, Field field, Shadow annotation) {
         String fieldName = field.getName();
         String fieldDesc = Type.getDescriptor(field.getType());
 

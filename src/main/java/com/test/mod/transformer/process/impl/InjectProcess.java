@@ -25,15 +25,17 @@ public class InjectProcess extends TransformerProcess<Inject, Method> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, ITransformer iTransformer, Method method, Inject inject) {
+    public void process(ClassNode targetClassNode,
+                        ClassNode mixinClassNode,
+                        Class<?> targetClass,
+                        Class<? extends ITransformer> iTransformer,
+                        Method method,
+                        Inject inject
+    ) {
         String desc = inject.desc();
-        MethodNode targetMethodNode = null;
         MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
-        for (String name : inject.methodName()) {
-            name = Mapping.get(targetClass, name, desc);
-            targetMethodNode = Tools.getMethod(targetClassNode, desc, name);
-            if (targetMethodNode != null) break;
-        }
+        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, inject.methodName(), desc);
+
         if (targetMethodNode != null && mixinMethodNode != null) {
 //            String injectedName = mixinMethodNode.name + "$inject$" + System.nanoTime();
 //            MethodNode newMethod = Tools.cloneMethod(mixinMethodNode);

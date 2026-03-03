@@ -16,7 +16,7 @@ public class ShadowMethodProcess extends TransformerProcess<Shadow, Method> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, ITransformer iTransformer, Method method, Shadow annotation) {
+    public void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, Class<? extends ITransformer> iTransformer, Method method, Shadow annotation) {
         String desc = annotation.desc();
         if (desc.isEmpty())
             throw new TransformerException("Shadow method desc NULL!!!");

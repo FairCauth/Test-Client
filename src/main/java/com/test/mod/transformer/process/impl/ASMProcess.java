@@ -18,19 +18,21 @@ public class ASMProcess extends TransformerProcess<ASM, Method> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, ITransformer iTransformer, Method method, ASM asm) {
+    public void process(ClassNode targetClassNode,
+                        ClassNode mixinClassNode,
+                        Class<?> targetClass,
+                        Class<? extends ITransformer> iTransformer,
+                        Method method,
+                        ASM asm
+    ) {
         String desc = asm.desc();
-        MethodNode targetMethodNode = null;
+        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, asm.methodName(), desc);
         MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
-        for (String name : asm.methodName()) {
-            name = Mapping.get(targetClass, name, desc);
-            targetMethodNode = Tools.getMethod(targetClassNode, desc, name);
-            if (targetMethodNode != null) break;
-        }
+
         if (targetMethodNode == null || mixinMethodNode == null)
             throw new TransformerException("targetMethodNode or mixinMethodNode NULL!");
         try {
-            method.invoke(iTransformer, targetMethodNode);
+            method.invoke(null, targetMethodNode);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }

@@ -37,7 +37,7 @@ public class ExampleMod
     public static final String MODID = "examplemod";
     // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
-
+    @SuppressWarnings("all")
     public ExampleMod()
     {
 
