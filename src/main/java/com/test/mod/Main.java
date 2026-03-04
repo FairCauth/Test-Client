@@ -21,6 +21,9 @@ public class Main {
         transformerLoader = new TransformerLoader();
 
     }
+    public static void attach() {
+        Main.INSTANCE.run();
+    }
     private void prepare() {
         System.setProperty("skija.library.path", "C:\\Test\\lib");
         CoreNative.init();

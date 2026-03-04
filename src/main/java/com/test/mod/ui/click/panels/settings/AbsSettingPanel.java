@@ -21,8 +21,15 @@ public abstract class AbsSettingPanel<T extends SettingWrapper<?>> {
         this.y = y;
         this.width = width;
         this.height = baseHeight;
+        int level = getSettingWrapper().getSetting().getLevel();
 
         Render2D.drawRect(canvasStack, getX(), getY(), getWidth(), getHeight(), 0, new Color(22,22,22,150).getRGB());
+        this.x += (level != 0 ? 5 : 0);
+        this.width -= (level != 0 ? 10 : 0);
+
+        if(level != 0)
+            Render2D.drawRect(canvasStack, getX() - 3, getY(), 2, getHeight(), 0, new Color(150,150,150,200).getRGB());
+
         float off = onRender(canvasStack, x, y, width);
         return height + off;
     }

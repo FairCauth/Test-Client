@@ -5,12 +5,10 @@ import com.test.mod.module.Category;
 import com.test.mod.setting.Setting;
 import com.test.mod.setting.SettingManager;
 import com.test.mod.setting.settings.BooleanSetting;
+import com.test.mod.setting.settings.ModeSetting;
 import com.test.mod.setting.settings.NumberSetting;
 import com.test.mod.ui.click.ClickGuiScreen;
-import com.test.mod.ui.click.panels.settings.AbsSettingPanel;
-import com.test.mod.ui.click.panels.settings.BooleanSettingPanel;
-import com.test.mod.ui.click.panels.settings.NumberSettingPanel;
-import com.test.mod.ui.click.panels.settings.SettingWrapper;
+import com.test.mod.ui.click.panels.settings.*;
 import com.test.mod.ui.system.Render2D;
 import com.test.mod.ui.system.font.FontManager;
 import com.test.mod.ui.system.utils.CanvasStack;
@@ -28,7 +26,7 @@ public class ModulePanel {
     @Getter
     private float x, y, width, height;
     private boolean settingPanelOpened = false;
-    private ArrayList<AbsSettingPanel<?>> settingPanels = new ArrayList<>();
+    private final ArrayList<AbsSettingPanel<?>> settingPanels = new ArrayList<>();
 
     public ModulePanel(AbstractModule module, Category category) {
         this.module = module;
@@ -38,6 +36,8 @@ public class ModulePanel {
                 settingPanels.add(new BooleanSettingPanel(new SettingWrapper<>(((BooleanSetting) setting))));
             } else if (setting instanceof NumberSetting) {
                 settingPanels.add(new NumberSettingPanel(new SettingWrapper<>(((NumberSetting) setting))));
+            } else if (setting instanceof ModeSetting) {
+                settingPanels.add(new ModeSettingPanel(new SettingWrapper<>(((ModeSetting) setting))));
             }
         }
     }
@@ -54,6 +54,8 @@ public class ModulePanel {
         if(settingPanelOpened) {
             float settingY = getY() + getHeight();
             for (AbsSettingPanel<?> settingPanel : settingPanels) {
+                settingPanel.getSettingWrapper().setDisplay(settingPanel.getSettingWrapper().getSetting().isDisplay());
+                if (!settingPanel.getSettingWrapper().isDisplay()) continue;
                 float off = settingPanel.onRenderFirst(canvasStack, getX(), settingY, getWidth());
                 offsetHeight += off;
                 settingY += off;
