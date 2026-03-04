@@ -31,7 +31,8 @@ public class AbstractModule extends SettingManager implements IMinecraft {
         setEnable(enable);
     }
 
-    private void registerSettings(Setting<?>... settings) {
+
+    protected void registerSetting(Setting<?>... settings) {
         try {
             registerSetting(this, settings);
         } catch (IllegalAccessException e) {

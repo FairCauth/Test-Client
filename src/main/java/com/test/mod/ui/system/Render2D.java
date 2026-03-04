@@ -51,6 +51,16 @@ public class Render2D implements IMinecraft {
             stack.canvas.drawRect(Rect.makeXYWH(x, y, width, height), paint);
         }
     }
+    public void drawCircle(CanvasStack canvasStack, float x, float y, float radius, int color) {
+        if (canvasStack == null || canvasStack.canvas == null) {
+            return;
+        }
+        paint.reset();
+        paint.setColor(color);
+        paint.setAntiAlias(radius > 0);
+
+        canvasStack.canvas.drawCircle(x, y, radius, paint);
+    }
 
     public void drawGradientRect(CanvasStack stack, float x, float y, float width, float height, float radius, int startColor, int endColor, boolean vertical) {
         float endX = vertical ? x : x + width;

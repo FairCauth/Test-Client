@@ -3,8 +3,12 @@ package com.test.mod.module;
 import com.darkmagician6.eventapi.EventManager;
 import com.darkmagician6.eventapi.EventTarget;
 import com.test.mod.events.EventKey;
+import com.test.mod.module.modules.combat.AimAssist;
 import com.test.mod.module.modules.combat.Test;
+import com.test.mod.module.modules.movement.Backtrack;
+import com.test.mod.module.modules.movement.NoSlow;
 import com.test.mod.module.modules.render.ClickGui;
+import com.test.mod.module.modules.render.NameTags;
 import lombok.Getter;
 import org.lwjgl.glfw.GLFW;
 
@@ -17,7 +21,8 @@ public class ModuleManager {
 
     public ModuleManager() {
         add(new ClickGui());
-        add(new Test());
+        add(new Test(), new AimAssist());
+        add(new Backtrack(), new NoSlow(), new Backtrack(), new NameTags());
         EventManager.register(this);
     }
     public ArrayList<AbstractModule> getModulesByCategory(Category category) {

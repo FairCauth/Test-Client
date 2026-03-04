@@ -31,9 +31,9 @@ public class CategoryPanel extends AbstractPanel {
         float moduleHeight = 18;
         float totalHeight = 0;
         for (ModulePanel modulePanel : modulePanels) {
-            modulePanel.onRender(canvasStack, getX(), moduleY, getWidth(), moduleHeight);
-            moduleY += moduleHeight;
-            totalHeight += moduleHeight;
+            float offsetHeight = modulePanel.onRender(canvasStack, getX(), moduleY, getWidth(), moduleHeight);
+            moduleY += moduleHeight + offsetHeight;
+            totalHeight += moduleHeight + offsetHeight;
 
         }
         return totalHeight;

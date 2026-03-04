@@ -50,11 +50,17 @@ public class ModulePanel {
         Render2D.drawRect(canvasStack,x,y,width,height,0, module.isEnable() ? enabledColor : new Color(44,44,44).getRGB());
         FontManager.getFont(10).drawString(canvasStack,module.getName(), x + 3,y + 2, Color.WHITE.getRGB());
 
+        float offsetHeight = 0;
         if(settingPanelOpened) {
-
+            float settingY = getY() + getHeight();
+            for (AbsSettingPanel<?> settingPanel : settingPanels) {
+                float off = settingPanel.onRenderFirst(canvasStack, getX(), settingY, getWidth());
+                offsetHeight += off;
+                settingY += off;
+            }
         }
 
-        return 0;
+        return offsetHeight;
     }
 
     public void mouseClicked(double p_94695_, double p_94696_, int p_94697_) {
@@ -62,14 +68,20 @@ public class ModulePanel {
             if(p_94697_ == 0) {
                 module.toggle();
             } else if (p_94697_ == 1) {
+
                 settingPanelOpened = !settingPanelOpened;
             }
+        }
+        for (AbsSettingPanel<?> settingPanel : settingPanels) {
+            settingPanel.mouseClicked(p_94695_,p_94696_,p_94697_);
         }
     }
 
 
     public void mouseReleased(double p_94722_, double p_94723_, int p_94724_) {
-
+        for (AbsSettingPanel<?> settingPanel : settingPanels) {
+            settingPanel.mouseReleased(p_94722_,p_94723_,p_94724_);
+        }
     }
 
 

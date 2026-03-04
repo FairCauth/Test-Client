@@ -13,7 +13,9 @@ public class Main {
     public ModuleManager moduleManager;
     public TransformerLoader transformerLoader;
     public void run() {
+
         prepare();
+
         moduleManager = new ModuleManager();
         skiaManager = new SkiaManager();
         transformerLoader = new TransformerLoader();
