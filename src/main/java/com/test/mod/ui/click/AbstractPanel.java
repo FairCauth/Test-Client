@@ -5,6 +5,7 @@ import com.test.mod.ui.system.utils.CanvasStack;
 import lombok.Getter;
 
 public abstract class AbstractPanel {
+    public float visibleHeight = 200;
     @Getter
     private final Category category;
     @Getter

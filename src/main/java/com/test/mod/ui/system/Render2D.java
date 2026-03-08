@@ -19,7 +19,9 @@ import java.util.function.Consumer;
 @UtilityClass
 public class Render2D implements IMinecraft {
     private final Paint paint = new Paint();
-
+    public void scissorRect(CanvasStack stack, float x, float y, float width, float height, ClipMode clipMode) {
+        stack.canvas.clipRect(Rect.makeXYWH(x,y,width,height), clipMode);
+    }
     public void drawRectBlur(CanvasStack stack, float x, float y, float width, float height, float radius, float blurRadius, int alpha) {
 
         BlurUtil.draw(stack, x, y, width, height, radius, blurRadius, alpha);

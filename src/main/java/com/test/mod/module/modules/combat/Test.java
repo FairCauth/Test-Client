@@ -9,6 +9,7 @@ import com.test.mod.setting.annotation.SettingInfo;
 import com.test.mod.setting.settings.BooleanSetting;
 import com.test.mod.setting.settings.ModeSetting;
 import com.test.mod.setting.settings.NumberSetting;
+import com.test.mod.transformer.transformers.MinecraftTransformer;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Arrays;
@@ -43,6 +44,12 @@ public class Test extends AbstractModule {
             @Text(label = "模式", language = Language.Chinese)
     })
     private final ModeSetting modeValue = new ModeSetting("Normal", Arrays.asList("Normal", "Jump", "Port"));
+
+    @Override
+    protected void onEnable() {
+        super.onEnable();
+
+    }
 
     public Test() {
         registerSetting(healthValue, delayValue, openInventoryValue, noAirValue, modeValue);

@@ -5,9 +5,11 @@ import com.test.mod.ui.system.Skia;
 import io.github.humbleui.skija.Canvas;
 import io.github.humbleui.skija.DirectContext;
 import io.github.humbleui.skija.Surface;
+import lombok.Getter;
 
 public class CanvasStack {
     public final DirectContext context;
+    @Getter
     public final Canvas canvas;
     public final Surface surface;
 

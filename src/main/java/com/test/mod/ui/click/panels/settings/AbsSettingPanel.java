@@ -11,10 +11,11 @@ public abstract class AbsSettingPanel<T extends SettingWrapper<?>> {
     private final T settingWrapper;
     @Getter
     protected float x, y, width, height;
+    @Getter
     private float baseHeight;
     public AbsSettingPanel(T settingWrapper, float baseHeight) {
         this.settingWrapper = settingWrapper;
-        this.baseHeight =baseHeight;
+        this.baseHeight = baseHeight;
     }
     public float onRenderFirst(CanvasStack canvasStack, float x, float y, float width) {
         this.x = x;
@@ -31,7 +32,7 @@ public abstract class AbsSettingPanel<T extends SettingWrapper<?>> {
             Render2D.drawRect(canvasStack, getX() - 3, getY(), 2, getHeight(), 0, new Color(150,150,150,200).getRGB());
 
         float off = onRender(canvasStack, x, y, width);
-        return height + off;
+        return off;
     }
     protected abstract float onRender(CanvasStack canvasStack, float x, float y, float width);
     public abstract void mouseClicked(double p_94695_, double p_94696_, int p_94697_);
