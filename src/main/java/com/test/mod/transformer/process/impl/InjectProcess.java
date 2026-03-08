@@ -34,17 +34,24 @@ public class InjectProcess extends TransformerProcess<Inject, Method> {
     ) {
         String desc = inject.desc();
         MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
-        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, inject.methodName(), desc);
+        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, inject.methodName(), desc, true);
 
         if (targetMethodNode != null && mixinMethodNode != null) {
-//            String injectedName = mixinMethodNode.name + "$inject$" + System.nanoTime();
+
+
+//            String injectedName = mixinMethodNode.name + "sdfafdsdfs";
 //            MethodNode newMethod = Tools.cloneMethod(mixinMethodNode);
 //            newMethod.name = injectedName;
-//            newMethod.access = mixinMethodNode.access;
+//            newMethod.access =
+//                    Opcodes.ACC_PRIVATE
+//                            | ACC_STATIC;
+            //-XX:+AllowRedefinitionToAddDeleteMethods
+//            newMethod.access = ACC_PRIVATE;
+//            targetClassNode.methods.add(newMethod);//将新方法添加进目标类
 
             //jvm不允许插入新方法 redefine class error 63
             //只能将inject方法里的指令全部复制插入 并且偏移变量
-//            targetClassNode.methods.add(newMethod);//将新方法添加进目标类
+
 
             List<AbstractInsnNode> candidates = PointFinder.find(targetMethodNode, inject.at());
             List<AbstractInsnNode> finalPoints = new ArrayList<>();
@@ -110,7 +117,6 @@ public class InjectProcess extends TransformerProcess<Inject, Method> {
                         //localIndex -> j;
                         map.put(localIndex, j);
                         white.add(localIndex);
-                        System.out.println("aaaaaaaaaaaaaaaaaaaaa");
                     }
                 }
 

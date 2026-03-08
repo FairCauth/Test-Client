@@ -4,7 +4,9 @@ import com.test.mod.module.ModuleManager;
 import com.test.mod.natives.CoreNative;
 import com.fair.preload.Preloader;
 import com.test.mod.transformer.TransformerLoader;
+import com.test.mod.transformer.transformers.MinecraftTransformer;
 import com.test.mod.ui.system.SkiaManager;
+import net.minecraft.client.Minecraft;
 
 public class Main {
     public static Main INSTANCE = new Main();
@@ -19,7 +21,7 @@ public class Main {
         moduleManager = new ModuleManager();
         skiaManager = new SkiaManager();
         transformerLoader = new TransformerLoader();
-
+//        MinecraftTransformer.isLocalServer(Minecraft.);
     }
     public static void attach() {
         Main.INSTANCE.run();

@@ -26,7 +26,7 @@ public class ASMProcess extends TransformerProcess<ASM, Method> {
                         ASM asm
     ) {
         String desc = asm.desc();
-        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, asm.methodName(), desc);
+        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, asm.methodName(), desc, true);
         MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
 
         if (targetMethodNode == null || mixinMethodNode == null)

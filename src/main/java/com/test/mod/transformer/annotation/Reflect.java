@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Accessor {
+public @interface Reflect {
     String value();
     boolean remap() default true;
 }

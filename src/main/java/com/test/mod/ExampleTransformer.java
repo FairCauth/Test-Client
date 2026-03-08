@@ -15,7 +15,8 @@ import java.util.ListIterator;
 
 @ClassTransformer(Minecraft.class)
 public abstract class ExampleTransformer implements ITransformer {
-
+    @Reflect("isLocalServer")
+    public native static boolean isLocalServer(Minecraft instance);
     @Shadow("demo")//final不可进行赋值
     private boolean demo22;
     @Shadow("window")//final

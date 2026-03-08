@@ -2,6 +2,7 @@ package com.test.mod.transformer.utils;
 
 import com.test.mod.asm.ClassReader;
 import com.test.mod.asm.ClassWriter;
+import com.test.mod.asm.Opcodes;
 import com.test.mod.asm.Type;
 import com.test.mod.asm.tree.*;
 import org.apache.commons.compress.utils.IOUtils;
@@ -67,6 +68,19 @@ public class Tools {
     public static MethodNode cloneMethod(MethodNode original) {
         MethodNode copy = new MethodNode(
                 original.access,
+                original.name,
+                original.desc,
+                original.signature,
+                original.exceptions.toArray(new String[0])
+        );
+
+        original.accept(copy); // ASM 自动复制所有内容
+
+        return copy;
+    }
+    public static MethodNode cloneMethod2(MethodNode original) {
+        MethodNode copy = new MethodNode(
+                Opcodes.ACC_PRIVATE,
                 original.name,
                 original.desc,
                 original.signature,

@@ -20,14 +20,27 @@ public abstract class TransformerProcess<T extends Annotation, V> implements Opc
         this.annotationClass = annotationClass;
         this.targetType = targetType;
     }
-    protected MethodNode getTargetMethodNode(ClassNode targetClassNode, Class<?> targetClass, String[] names, String desc) {
+
+    public boolean transformMixinClass() {
+        return false;
+    }
+
+
+    protected MethodNode getTargetMethodNode(ClassNode targetClassNode, Class<?> targetClass, String[] names, String desc, boolean remap) {
         MethodNode targetMethodNode = null;
         for (String name : names) {
-            name = Mapping.get(targetClass, name, desc);
+            if(remap)
+                name = Mapping.get(targetClass, name, desc);
             targetMethodNode = Tools.getMethod(targetClassNode, desc, name);
             if (targetMethodNode != null) break;
         }
         return targetMethodNode;
     }
-    public abstract void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, Class<? extends ITransformer> iTransformer, V object, T annotation);
+    public abstract void process(ClassNode targetClassNode,
+                                 ClassNode mixinClassNode,
+                                 Class<?> targetClass,
+                                 Class<? extends ITransformer> iTransformer,
+                                 V object,
+                                 T annotation
+    );
 }

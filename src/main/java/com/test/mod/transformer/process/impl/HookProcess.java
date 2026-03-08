@@ -31,7 +31,7 @@ public class HookProcess extends TransformerProcess<Hook, Method> {
         String desc = annotation.desc();
 
         MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
-        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, annotation.methodName(), desc);
+        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, annotation.methodName(), desc, true);
 
         if (targetMethodNode == null || mixinMethodNode == null)
             throw new TransformerException("targetMethodNode or mixinMethodNode NULL!");

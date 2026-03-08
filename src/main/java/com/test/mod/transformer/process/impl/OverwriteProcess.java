@@ -26,7 +26,7 @@ public class OverwriteProcess extends TransformerProcess<Overwrite, Method> {
     ) {
         String desc = overwrite.desc();
         MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
-        MethodNode targetMethodNode = getTargetMethodNode(classNode, targetClass, overwrite.methodName(), desc);
+        MethodNode targetMethodNode = getTargetMethodNode(classNode, targetClass, overwrite.methodName(), desc, true);
 
         if (targetMethodNode != null && mixinMethodNode != null) {
             //System.out.println("11111111111111111111111111111111 " + method.getName());

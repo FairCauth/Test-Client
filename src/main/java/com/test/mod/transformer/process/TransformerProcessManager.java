@@ -23,20 +23,20 @@ public class TransformerProcessManager {
         add(new InjectProcess());
         add(new HookProcess());
         add(new ASMProcess());
-       // add(new AccessorProcess());
+        add(new ReflectProcess());
     }
-    public void matchField(Field field,
+    public boolean matchField(Field field,
                            ClassNode classNode, ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas) {
 
-        matchMember(field, classNode,  mixinClassNode,iTransformer,targetClas);
+        return matchMember(field, classNode,  mixinClassNode,iTransformer,targetClas);
     }
 
-    public void matchMethod(Method method,
+    public boolean matchMethod(Method method,
                             ClassNode classNode, ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas) {
 
-        matchMember(method, classNode, mixinClassNode,iTransformer,targetClas);
+        return matchMember(method, classNode, mixinClassNode,iTransformer,targetClas);
     }
-    private <V> void matchMember(
+    private <V> boolean matchMember(
             V member,
             ClassNode targetClassNode, ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas
     ) {
@@ -55,8 +55,11 @@ public class TransformerProcessManager {
             if (annotation == null) continue;
 
 
+
             invokeProcess(process, targetClassNode, mixinClassNode, member, annotation,iTransformer,targetClas);
+            return process.transformMixinClass();
         }
+        return false;
     }
     @SuppressWarnings("unchecked")
     private <T extends Annotation, V> void invokeProcess(
