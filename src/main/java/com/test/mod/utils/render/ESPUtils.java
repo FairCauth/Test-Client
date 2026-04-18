@@ -1,5 +1,7 @@
 package com.test.mod.utils.render;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.test.mod.utils.IMinecraft;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -8,9 +10,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.OptionalDouble;
 
 public class ESPUtils implements IMinecraft {
     public record Bone(Vec3 start, Vec3 end) {
@@ -23,35 +31,55 @@ public class ESPUtils implements IMinecraft {
 
     public static final RenderStateShard.TransparencyStateShard NO_TRANSPARENCY = new RenderStateShard.TransparencyStateShard("no_transparency", RenderSystem::disableBlend, () -> {});
     public static final RenderStateShard.ShaderStateShard POSITION_COLOR_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
-    protected static final RenderStateShard.LayeringStateShard VIEW_OFFSET_Z_LAYERING = new RenderStateShard.LayeringStateShard("view_offset_z_layering", () -> {
-        PoseStack posestack = RenderSystem.getModelViewStack();
-        posestack.pushPose();
-        posestack.scale(0.99975586F, 0.99975586F, 0.99975586F);
-        RenderSystem.applyModelViewMatrix();
-    }, () -> {
-        PoseStack posestack = RenderSystem.getModelViewStack();
-        posestack.popPose();
-        RenderSystem.applyModelViewMatrix();
-    });
-    protected static final RenderStateShard.OutputStateShard ITEM_ENTITY_TARGET = new RenderStateShard.OutputStateShard("item_entity_target", () -> {
-        if (Minecraft.useShaderTransparency()) {
-            mc.levelRenderer.getItemEntityTarget().bindWrite(false);
-        }
 
-    }, () -> {
-        if (Minecraft.useShaderTransparency()) {
-            mc.getMainRenderTarget().bindWrite(false);
-        }
-
-    });
-    protected static final RenderStateShard.TransparencyStateShard TRANSLUCENT_TRANSPARENCY = new RenderStateShard.TransparencyStateShard("translucent_transparency", () -> {
-        RenderSystem.enableBlend();
-        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
-    }, () -> {
-        RenderSystem.disableBlend();
-        RenderSystem.defaultBlendFunc();
-    });
     protected static final RenderStateShard.ShaderStateShard RENDERTYPE_LINES_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeLinesShader);
+    public static RenderType createLineRenderType() {
+        try {
+            Class<?> lineClass = Class.forName(
+                    "net.minecraft.client.renderer.RenderStateShard$LineStateShard"
+            );
+            Constructor<?> ctor = lineClass.getDeclaredConstructor(OptionalDouble.class);
+            ctor.setAccessible(true);
+            Object lineInstance = ctor.newInstance(OptionalDouble.of(3.0));
+
+            RenderType.CompositeState.CompositeStateBuilder builder = RenderType.CompositeState.builder()
+                    .setShaderState(RENDERTYPE_LINES_SHADER)
+                    .setTransparencyState(NO_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setDepthTestState(NO_DEPTH_TEST);
+
+            Method setLineState = builder.getClass()
+                    .getDeclaredMethod("setLineState", lineClass);
+            setLineState.setAccessible(true);
+            setLineState.invoke(builder, lineInstance);
+
+            return RenderType.create(
+                    "no_depth_lines",
+                    DefaultVertexFormat.POSITION_COLOR_NORMAL,
+                    VertexFormat.Mode.LINES,
+                    256, false, false,
+                    builder.createCompositeState(false)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static RenderType LINES = createLineRenderType();
+    public static RenderType DEBUG_LINES = RenderType.create(
+            "no_depth_lines",
+            DefaultVertexFormat.POSITION_COLOR,
+            VertexFormat.Mode.DEBUG_LINES,
+            256,
+            false,false,
+            RenderType.CompositeState.builder()
+                    .setShaderState(POSITION_COLOR_SHADER)
+                    .setTransparencyState(NO_TRANSPARENCY)
+
+                    .setCullState(NO_CULL)
+                    .setDepthTestState(NO_DEPTH_TEST)
+
+                    .createCompositeState(false)
+    );
     public static Vec3 applyMatrixTransform(Matrix4f matrix, Vec3 vec) {
         Vector4f transformed = new Vector4f((float) vec.x, (float) vec.y, (float) vec.z, 1.0F);
         transformed.mul(matrix);

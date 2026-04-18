@@ -9,19 +9,19 @@ import com.test.mod.transformer.annotation.ClassNameTransformer;
 import com.test.mod.transformer.annotation.ClassTransformer;
 import com.test.mod.transformer.annotation.TransformerMeta;
 import com.test.mod.transformer.process.TransformerProcessManager;
-import com.test.mod.transformer.transformers.GameRendererTransformer;
-import com.test.mod.transformer.transformers.KeyboardHandlerTransformer;
-import com.test.mod.transformer.transformers.MinecraftTransformer;
-import com.test.mod.transformer.transformers.RenderSystemTransformer;
+import com.test.mod.transformer.transformers.*;
 import com.test.mod.transformer.utils.Tools;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class TransformerLoader {
@@ -33,7 +33,9 @@ public class TransformerLoader {
         add(
                 MinecraftTransformer.class,
                 GameRendererTransformer.class,
-                KeyboardHandlerTransformer.class
+                KeyboardHandlerTransformer.class,
+                LivingEntityRendererTransformer.class,
+                ModelPartTransformer.class
         );
 
         try {
@@ -92,16 +94,16 @@ public class TransformerLoader {
 
             byte[] newMixinClassByte = Tools.rewriteClass(mixinClassNode);
 
-            if(targetClass.equals(Minecraft.class) ) {
+            if(targetClass.equals(LevelRenderer.class) ) {
                 try (FileOutputStream fos = new FileOutputStream(targetClass.getName() + ".class")) {
                     fos.write(newClassByte);
                 } catch (IOException ignored) {}
             }
-            if(transformer.equals(MinecraftTransformer.class) ) {
-                try (FileOutputStream fos = new FileOutputStream(transformer.getName() + ".class")) {
-                    fos.write(newMixinClassByte);
-                } catch (IOException ignored) {}
-            }
+//            if(transformer.equals(MinecraftTransformer.class) ) {
+//                try (FileOutputStream fos = new FileOutputStream(transformer.getName() + ".class")) {
+//                    fos.write(newMixinClassByte);
+//                } catch (IOException ignored) {}
+//            }
 
             int errorCode = CoreNative.redefineClasses(targetClass, newClassByte);
             if (errorCode != 0) {

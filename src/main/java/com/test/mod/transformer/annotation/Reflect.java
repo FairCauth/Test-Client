@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Reflect {
     String value();
+    String desc() default "";
     boolean remap() default true;
 }

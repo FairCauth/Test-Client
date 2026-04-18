@@ -39,7 +39,9 @@ public class Render2D implements IMinecraft {
     public void drawRectGlow(CanvasStack stack, float x, float y, float width, float height, float radius,float glowRadius, int color) {
         GlowUtil.draw(stack, x, y, width, height, radius, glowRadius, color);
     }
-
+    public void drawRect(CanvasStack stack, float x, float y, float width, float height, int color) {
+        drawRect(stack,x,y,width,height,0,color);
+    }
     public void drawRect(CanvasStack stack, float x, float y, float width, float height, float radius, int color) {
         if (width <= 0 || height <= 0 || (color >> 24 & 0xFF) == 0) return;
 

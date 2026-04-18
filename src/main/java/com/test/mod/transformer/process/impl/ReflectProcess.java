@@ -10,7 +10,9 @@ import com.test.mod.transformer.process.TransformerProcess;
 import com.test.mod.transformer.utils.Tools;
 import com.test.mod.transformer.varhandle.VarHandleCache;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,23 +33,71 @@ public class ReflectProcess extends TransformerProcess<Reflect, Method> {
                         Reflect annotation) {
         String fieldName = annotation.value();
         fieldName = Mapping.get(targetClass,fieldName, null);
+        boolean isMethod = !annotation.desc().isEmpty();
         if(fieldName == null) return;
         boolean isStatic = false;
+        String key = targetClass.getName() + "." + fieldName + "." + annotation.desc();
         try {
-            Field field = targetClass.getDeclaredField(fieldName);
-            Class<?> fieldType = field.getType();
-            isStatic = Modifier.isStatic(field.getModifiers());
-            MethodHandles.Lookup lookup = MethodHandles.lookup();
-            MethodHandles.Lookup privateLookup =
-                    MethodHandles.privateLookupIn(targetClass, lookup);
-            VarHandle varHandle = privateLookup.findVarHandle(
-                    targetClass, fieldName, fieldType);
-            if(varHandle == null) {
-                System.out.println("NULL varHandle!!!");
-                return;
+            if (isMethod) {
+                Type r = Type.getMethodType(annotation.desc());
+                Type[] argTypes = r.getArgumentTypes();
+
+                Class<?>[] paramTypes = new Class<?>[argTypes.length];
+                for (int i = 0; i < argTypes.length; i++) {
+                    paramTypes[i] = Class.forName(argTypes[i].getClassName());
+                }
+
+                Method method = targetClass.getDeclaredMethod(fieldName, paramTypes);
+                isStatic = Modifier.isStatic(method.getModifiers());
+
+                MethodHandles.Lookup lookup = MethodHandles.lookup();
+                MethodHandles.Lookup privateLookup =
+                        MethodHandles.privateLookupIn(targetClass, lookup);
+
+                MethodType methodType =
+                        MethodType.methodType(method.getReturnType(), method.getParameterTypes());
+
+                MethodHandle methodHandle;
+
+                if (isStatic) {
+                    methodHandle = privateLookup.findStatic(
+                            targetClass,
+                            fieldName,
+                            methodType
+                    );
+                } else {
+                    methodHandle = privateLookup.findVirtual(
+                            targetClass,
+                            fieldName,
+                            methodType
+                    );
+                }
+
+                if (methodHandle == null) {
+                    System.out.println("NULL methodHandle!!!");
+                    return;
+                }
+
+                System.out.println("PUT METHOD CACHE " + key);
+                VarHandleCache.putMethodCache(key, methodHandle);
+
+            }else {
+                Field field = targetClass.getDeclaredField(fieldName);
+                Class<?> fieldType = field.getType();
+                isStatic = Modifier.isStatic(field.getModifiers());
+                MethodHandles.Lookup lookup = MethodHandles.lookup();
+                MethodHandles.Lookup privateLookup =
+                        MethodHandles.privateLookupIn(targetClass, lookup);
+                VarHandle varHandle = privateLookup.findVarHandle(
+                        targetClass, fieldName, fieldType);
+                if(varHandle == null) {
+                    System.out.println("NULL varHandle!!!");
+                    return;
+                }
+                System.out.println("PUT FIELD CACHE " + key );
+                VarHandleCache.putFieldCache(key, varHandle);
             }
-            System.out.println("PUT CACHE " + fieldName );
-            VarHandleCache.putCache(fieldName, varHandle);
+
         }catch (Exception e) {
             e.printStackTrace();
         }
@@ -64,15 +114,30 @@ public class ReflectProcess extends TransformerProcess<Reflect, Method> {
 
         InsnList insnList = new InsnList();
 
-        insnList.add(new LdcInsnNode(fieldName));
 
 
+        insnList.add(new LdcInsnNode(key));
         if(!isStatic)
             insnList.add(new VarInsnNode(ALOAD, 0));
         else insnList.add(new InsnNode(ACONST_NULL));
 
         Class<?> returnType = object.getReturnType();
         int valueSlot = isStatic ? 0 : 1;
+
+
+        if(isMethod) {
+            insnList.add(new MethodInsnNode(
+                    INVOKESTATIC,
+                    Type.getInternalName(VarHandleCache.class),
+                    "getField",
+                    "(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;",
+                    false
+            ));
+
+        } else {
+
+        }
+
         if(returnType == void.class) {
             //setter
             Class<?> paramType = object.getParameterTypes()[1];
@@ -111,7 +176,8 @@ public class ReflectProcess extends TransformerProcess<Reflect, Method> {
                     false
             ));
             insnList.add(new InsnNode(RETURN));
-        } else {
+        }
+        else {
             insnList.add(new MethodInsnNode(
                     INVOKESTATIC,
                     Type.getInternalName(VarHandleCache.class),
@@ -154,7 +220,12 @@ public class ReflectProcess extends TransformerProcess<Reflect, Method> {
 
         mixinMethodNode.instructions.add(insnList);
     }
+    private void processMethod(String methodName, String desc) {
 
+    }
+    private void processField() {
+
+    }
     @Override
     public boolean transformMixinClass() {
         return true;

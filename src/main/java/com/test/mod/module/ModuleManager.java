@@ -7,9 +7,7 @@ import com.test.mod.module.modules.combat.AimAssist;
 import com.test.mod.module.modules.combat.Test;
 import com.test.mod.module.modules.movement.Backtrack;
 import com.test.mod.module.modules.movement.NoSlow;
-import com.test.mod.module.modules.render.ClickGui;
-import com.test.mod.module.modules.render.NameTags;
-import com.test.mod.module.modules.render.TestModule1;
+import com.test.mod.module.modules.render.*;
 import lombok.Getter;
 import org.lwjgl.glfw.GLFW;
 
@@ -22,6 +20,7 @@ public class ModuleManager {
 
     public ModuleManager() {
         add(new ClickGui());
+        add(new Skeleton());
         add(new Test(), new AimAssist());
         add(new Backtrack(), new NoSlow(), new Backtrack(), new NameTags(), new TestModule1());
         EventManager.register(this);

@@ -8,6 +8,12 @@ import com.test.mod.module.annotation.ModuleInfo;
 import com.test.mod.setting.annotation.SettingInfo;
 import com.test.mod.setting.attribute.SettingAttribute;
 import com.test.mod.setting.settings.BooleanSetting;
+import com.test.mod.transformer.transformers.MinecraftTransformer;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 
 @ModuleInfo(name = {
         @Text(label = "TestModule1", language = Language.English),
@@ -43,5 +49,26 @@ public class TestModule1 extends AbstractModule {
     );
     public TestModule1() {
         registerSetting(a);
+    }
+    public void log(String message) {
+        String nameText = "Test >>";
+        MutableComponent prefix = Component.literal("");
+
+        for (int i = 0; i < nameText.length(); i++) {
+            String c = String.valueOf(nameText.charAt(i));
+
+            // hook color
+            Style style = Style.EMPTY.withColor(TextColor.fromRgb((0x0829 << 8) | i));
+            prefix.append(Component.literal(c).withStyle(style));
+        }
+
+        MutableComponent msg = Component.literal(" " + message).withStyle(ChatFormatting.GRAY);
+        mc.gui.getChat().addMessage(prefix.append(msg));
+    }
+    @Override
+    protected void onEnable() {
+
+        MinecraftTransformer.setLocalServer(mc, true);
+        log(MinecraftTransformer.isLocalServer(mc) + " isLOCAL");
     }
 }

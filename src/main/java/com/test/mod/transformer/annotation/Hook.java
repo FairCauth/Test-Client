@@ -12,4 +12,5 @@ public @interface Hook {
     String desc();
     At at();
     int[] locals() default {};
+    int[] types() default {};
 }

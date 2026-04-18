@@ -51,14 +51,19 @@ public class HookProcess extends TransformerProcess<Hook, Method> {
        for (AbstractInsnNode point : finalPoints) {
            InsnList newInsn = new InsnList();
            //加载参数
+//           for (int local : annotation.locals()) {
+//               if(local == 0) {
+//                   newInsn.add(new VarInsnNode(ALOAD, 0));//this
+//               }else {
+//                   Type type = findLocalType(targetMethodNode, local);
+//                   newInsn.add(new VarInsnNode(getLoadOpcode(type), local));
+//               }
+//
+//           }
+           int i = 0;
            for (int local : annotation.locals()) {
-               if(local == 0) {
-                   newInsn.add(new VarInsnNode(ALOAD, 0));//this
-               }else {
-                   Type type = findLocalType(targetMethodNode, local);
-                   newInsn.add(new VarInsnNode(getLoadOpcode(type), local));
-               }
-
+               newInsn.add(new VarInsnNode(annotation.types()[i], local));
+               i++;
            }
            newInsn.add(new MethodInsnNode(
                    INVOKESTATIC, Type.getInternalName(method.getDeclaringClass()), method.getName(),Tools.toDesc(method)
