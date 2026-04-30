@@ -1,4 +1,4 @@
-package com.test.mod.transformer.transformers;
+package com.test.mod.transformer.transformers.model;
 
 import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.annotation.ClassTransformer;

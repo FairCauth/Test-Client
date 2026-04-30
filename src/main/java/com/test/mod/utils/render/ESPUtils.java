@@ -80,12 +80,12 @@ public class ESPUtils implements IMinecraft {
 
                     .createCompositeState(false)
     );
-    public static Vec3 applyMatrixTransform(Matrix4f matrix, Vec3 vec) {
-        Vector4f transformed = new Vector4f((float) vec.x, (float) vec.y, (float) vec.z, 1.0F);
-        transformed.mul(matrix);
-        return new Vec3(transformed.x(), transformed.y(), transformed.z());
+    public static Vec3 applyMatrixTransform(Matrix4f matrix, Vec3 vec, Vector4f tmp) {
+        tmp.set((float) vec.x, (float) vec.y, (float) vec.z, 1.0f);
+        matrix.transform(tmp);
+        return new Vec3(tmp.x(), tmp.y(), tmp.z());
     }
-    public static BoneData translateBone(ModelPart part, ModelPart.Cube cube) {
+    public static BoneData translateBone(PoseStack originalStack, ModelPart part, ModelPart.Cube cube) {
 
         Vec3 v0 = new Vec3(cube.minX, cube.minY, cube.minZ);
         Vec3 v1 = new Vec3(cube.maxX, cube.minY, cube.minZ);
@@ -110,23 +110,53 @@ public class ESPUtils implements IMinecraft {
         stack.translate(part.x, part.y, part.z);
         part.translateAndRotate(stack);
         Matrix4f matrix = stack.last().pose();
-        center = applyMatrixTransform(matrix, center);
-        topCenter = applyMatrixTransform(matrix, topCenter);
-        bottomCenter = applyMatrixTransform(matrix, bottomCenter);
-        rightCenter = applyMatrixTransform(matrix, rightCenter);
-        leftCenter = applyMatrixTransform(matrix, leftCenter);
-        backCenter = applyMatrixTransform(matrix, backCenter);
-        frontCenter = applyMatrixTransform(matrix, frontCenter);
-        v0 = applyMatrixTransform(matrix, v0);
-        v1 = applyMatrixTransform(matrix, v1);
-        v2 = applyMatrixTransform(matrix, v2);
-        v3 = applyMatrixTransform(matrix, v3);
-        v4 = applyMatrixTransform(matrix, v4);
-        v5 = applyMatrixTransform(matrix, v5);
-        v6 = applyMatrixTransform(matrix, v6);
-        v7 = applyMatrixTransform(matrix, v7);
+
+
+        Vec3[] points = {
+                center, topCenter, bottomCenter, rightCenter,
+                leftCenter, backCenter, frontCenter,
+                v0, v1, v2, v3, v4, v5, v6, v7
+        };
+        Vector4f tmp = new Vector4f();
+        for (int i = 0; i < points.length; i++) {
+            tmp.set((float) points[i].x, (float) points[i].y, (float) points[i].z, 1.0f);
+            matrix.transform(tmp);
+            points[i] = new Vec3(tmp.x(), tmp.y(), tmp.z());
+        }
+//        center = applyMatrixTransform(matrix, center);
+//        topCenter = applyMatrixTransform(matrix, topCenter);
+//        bottomCenter = applyMatrixTransform(matrix, bottomCenter);
+//        rightCenter = applyMatrixTransform(matrix, rightCenter);
+//        leftCenter = applyMatrixTransform(matrix, leftCenter);
+//        backCenter = applyMatrixTransform(matrix, backCenter);
+//        frontCenter = applyMatrixTransform(matrix, frontCenter);
+//        v0 = applyMatrixTransform(matrix, v0);
+//        v1 = applyMatrixTransform(matrix, v1);
+//        v2 = applyMatrixTransform(matrix, v2);
+//        v3 = applyMatrixTransform(matrix, v3);
+//        v4 = applyMatrixTransform(matrix, v4);
+//        v5 = applyMatrixTransform(matrix, v5);
+//        v6 = applyMatrixTransform(matrix, v6);
+//        v7 = applyMatrixTransform(matrix, v7);
         stack.popPose();
-        return new BoneData(part, center, frontCenter, backCenter, leftCenter, rightCenter, topCenter, bottomCenter,
-                v0, v1, v2, v3, v4, v5, v6, v7);
+        return new BoneData(part,
+                points[0],  // center
+                points[6],  // frontCenter
+                points[5],  // backCenter
+                points[4],  //leftCenter
+                points[3],  //rightCenter
+                points[1],  //topCenter
+                points[2],  //bottomCenter
+                points[7],  //v0
+                points[8],  //v1
+                points[9],  //v2
+                points[10], //v3
+                points[11], //v4
+                points[12], //v5
+                points[13], //v6
+                points[14]  // v7
+        );
+//        return new BoneData(part, center, frontCenter, backCenter, leftCenter, rightCenter, topCenter, bottomCenter,
+//                v0, v1, v2, v3, v4, v5, v6, v7);
     }
 }

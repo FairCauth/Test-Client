@@ -1,5 +1,9 @@
 package com.test.mod.utils;
 
-public class Utils {
+import net.minecraft.world.entity.LivingEntity;
 
+public class Utils {
+    public static boolean isValidEntity(LivingEntity entityLivingBase) {
+        return true;
+    }
 }

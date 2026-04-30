@@ -22,7 +22,7 @@ public class ModuleManager {
         add(new ClickGui());
         add(new Skeleton());
         add(new Test(), new AimAssist());
-        add(new Backtrack(), new NoSlow(), new Backtrack(), new NameTags(), new TestModule1());
+        add(new Backtrack(), new NoSlow(), new Backtrack(), new NameTags(), new TestModule1(), new ESP2D());
         EventManager.register(this);
     }
     public ArrayList<AbstractModule> getModulesByCategory(Category category) {

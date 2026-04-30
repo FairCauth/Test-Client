@@ -1,8 +1,6 @@
 package com.test.mod.transformer;
 
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.test.mod.ExampleTransformer;
 import com.test.mod.asm.tree.ClassNode;
 import com.test.mod.natives.CoreNative;
 import com.test.mod.transformer.annotation.ClassNameTransformer;
@@ -10,18 +8,17 @@ import com.test.mod.transformer.annotation.ClassTransformer;
 import com.test.mod.transformer.annotation.TransformerMeta;
 import com.test.mod.transformer.process.TransformerProcessManager;
 import com.test.mod.transformer.transformers.*;
+import com.test.mod.transformer.transformers.model.CreeperModelTransformer;
+import com.test.mod.transformer.transformers.model.ModelPartTransformer;
+import com.test.mod.transformer.transformers.model.SpiderModelTransformer;
 import com.test.mod.transformer.utils.Tools;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class TransformerLoader {
@@ -35,7 +32,11 @@ public class TransformerLoader {
                 GameRendererTransformer.class,
                 KeyboardHandlerTransformer.class,
                 LivingEntityRendererTransformer.class,
-                ModelPartTransformer.class
+                ModelPartTransformer.class,
+                GuiTransformer.class,
+                LevelRendererTransformer.class,
+                SpiderModelTransformer.class,
+                CreeperModelTransformer.class
         );
 
         try {
