@@ -49,7 +49,7 @@ public class Preloader extends Thread {
         if (socket != null) socket.close();
     }
 
-    public static String MAIN_PATH;
+    public static String MAIN_PATH = "C:\\Test\\lib";
 
     public byte[][] classes;
     public static Class<?> mainClazz = null;
