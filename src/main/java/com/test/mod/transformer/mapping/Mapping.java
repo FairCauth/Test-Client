@@ -1,6 +1,7 @@
 package com.test.mod.transformer.mapping;
 
 import com.fair.preload.Preloader;
+import com.test.mod.Main;
 import com.test.mod.asm.Type;
 
 import java.io.File;
@@ -11,7 +12,7 @@ public class Mapping {
 
     static {
         try {
-           mappingFile = IMappingFile.load(new File(Preloader.getMainPath() + "\\lib\\" + "mappings.tsrg"));
+           mappingFile = IMappingFile.load(new File(Preloader.MAIN_PATH + "\\mappings.tsrg"));
         } catch (IOException e) {
             e.printStackTrace();
         }

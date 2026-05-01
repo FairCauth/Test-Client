@@ -1,5 +1,7 @@
 package com.test.mod.transformer.process.impl;
 
+import com.fair.preload.Preloader;
+import com.test.mod.Main;
 import com.test.mod.asm.Opcodes;
 import com.test.mod.asm.Type;
 import com.test.mod.asm.tree.*;
@@ -58,6 +60,7 @@ public class ShadowFieldProcess extends TransformerProcess<Shadow, Field> {
                     if (insn instanceof FieldInsnNode f) {
                         if (f.owner.equals(mixin.name) && f.name.equals(shadowName) && f.desc.equals(shadowDesc)) {
                             founded = true;
+                            Preloader.send("Rewrite Shadow field: " + f.owner + " -> " + target.name);
                             System.out.println("Rewrite Shadow field: " + f.owner + " -> " + target.name);
                             if (annotation.remap())
                                 s = Mapping.get(targetClass, s, null);

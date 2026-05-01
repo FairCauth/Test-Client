@@ -1,6 +1,8 @@
 package com.test.mod.transformer;
 
 
+import com.fair.preload.Preloader;
+import com.test.mod.Main;
 import com.test.mod.asm.tree.ClassNode;
 import com.test.mod.natives.CoreNative;
 import com.test.mod.transformer.annotation.ClassNameTransformer;
@@ -50,6 +52,7 @@ public class TransformerLoader {
 
         Set<String> keySet = transformerMap.keySet();
         int success = 0, error = 0;
+        Preloader.send("start transformer " + keySet.size());
         for (String className : keySet) {
             Class<?> targetClass = Class.forName(className);
             Class<? extends ITransformer> transformer = transformerMap.get(className);
@@ -88,6 +91,7 @@ public class TransformerLoader {
             }
 
             if(classNode == null || mixinClassNode == null) {
+                Preloader.send("classNode == null || mixinClassNode == null!");
                 System.out.println("classNode == null || mixinClassNode == null");
                 return;
             }
@@ -109,6 +113,7 @@ public class TransformerLoader {
             int errorCode = CoreNative.redefineClasses(targetClass, newClassByte);
             if (errorCode != 0) {
                 error++;
+                Preloader.send(className +" transformer RedefineClass error "+ errorCode);
                 throw new TransformerException(className + " transformer RedefineClass error " + errorCode);
             }
 
@@ -116,12 +121,20 @@ public class TransformerLoader {
                 errorCode = CoreNative.redefineClasses(transformer, newMixinClassByte);
                 if (errorCode != 0) {
                     error++;
+                    Preloader.send(className + " [MIXINCLASS]transformer RedefineClass error " + errorCode);
                     throw new TransformerException(className + " [MIXINCLASS]transformer RedefineClass error " + errorCode);
                 }
+                Preloader.send(transformer.getName() + " -> [MIXINCLASS]Transform OK " + cnt);
                 System.out.println(transformer.getName() + " -> [MIXINCLASS]Transform OK " + cnt);
             }
 
             success++;
+            try {
+                Thread.sleep(500);
+            }catch (Exception ignored) {
+            }
+
+            Preloader.send(targetClass.getName() + " -> Transform OK " + cnt);
             System.out.println(targetClass.getName() + " -> Transform OK " + cnt);
         }
     }

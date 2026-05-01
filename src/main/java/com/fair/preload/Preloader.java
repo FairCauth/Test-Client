@@ -2,20 +2,55 @@ package com.fair.preload;
 
 import sun.misc.Unsafe;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.Socket;
 //此类只用于加载自身jar class
 //注入Core.dll时会先加载此类 此类保存在Core里 在这里改完注入完不生效。
 
 //registerNatives用于注册NativeBridge的所有native方法
 public class Preloader extends Thread {
-    public static String CORE_DLL = getMainPath() + "\\lib\\Core.dll";
-    public static String getMainPath() {
-        return "C:\\Test";
+    private static Socket socket;
+    private static PrintWriter out;
+    private static BufferedReader in;
+    public static void connect(String host, int port) {
+        try {
+            socket = new Socket(host, port);
+            out = new PrintWriter(socket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            System.out.println("已连接到服务器");
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
-    static {
-        System.load(CORE_DLL);
+    public static String sendAndWait(String message) {
+        if (out != null) {
+            try {
+                out.println(message);
+                return in.readLine();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        return "";
     }
+    public static void send(String message) {
+        if (out != null) {
+            out.println(message);
+        }
+    }
+
+    public static void disconnect() throws Exception {
+        if (socket != null) socket.close();
+    }
+
+    public static String MAIN_PATH;
+
     public byte[][] classes;
     public static Class<?> mainClazz = null;
     public ClassLoader classLoader;
@@ -31,6 +66,10 @@ public class Preloader extends Thread {
 
     @Override
     public void run() {
+        connect("127.0.0.1", 9999);
+        MAIN_PATH = sendAndWait("run!");
+        send("path " + MAIN_PATH);
+        System.load(MAIN_PATH + "\\Core.dll");
         try {
             Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
             Field field = unsafeClass.getDeclaredField("theUnsafe");
@@ -46,6 +85,7 @@ public class Preloader extends Thread {
             e.printStackTrace();
         }
         log("[Loader] Thread Run");
+        send("[Loader] Thread Run");
 
         for (byte[] classByte : classes) {
             Class<?> clazz = defineClass(classByte);
@@ -63,6 +103,7 @@ public class Preloader extends Thread {
             return;
         }
         try {
+            send("[Loader] tryInvoke");
             log("[Loader] tryInvoke");
             Method method = mainClazz.getDeclaredMethod("attach");
             method.invoke(null);

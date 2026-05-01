@@ -14,20 +14,30 @@ public class Main {
     public SkiaManager skiaManager;
     public ModuleManager moduleManager;
     public TransformerLoader transformerLoader;
-    public void run() {
+    public Client client;
 
+    public void run() {
         prepare();
 
         moduleManager = new ModuleManager();
         skiaManager = new SkiaManager();
         transformerLoader = new TransformerLoader();
+
+
+        try {
+            Thread.sleep(1000);
+        }catch (Exception e) {
+
+        }
 //        MinecraftTransformer.isLocalServer(Minecraft.);
+        Preloader.send("init ok");
+
     }
     public static void attach() {
         Main.INSTANCE.run();
     }
     private void prepare() {
-        System.setProperty("skija.library.path", "C:\\Test\\lib");
+        System.setProperty("skija.library.path", Preloader.MAIN_PATH);
         CoreNative.init();
         Preloader.registerNatives("Lcom/test/mod/natives/CoreNative;");
         CoreNative.startup();

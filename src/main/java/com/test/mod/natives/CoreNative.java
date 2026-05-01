@@ -1,12 +1,12 @@
 package com.test.mod.natives;
 
 import com.fair.preload.Preloader;
+import com.test.mod.Main;
 
 public class CoreNative {
-    static {
-        System.load(Preloader.CORE_DLL);
-    }
+
     public static void init() {
+        System.load(Preloader.MAIN_PATH + "\\Core.dll");
         //无任何东西 只是为了让modloader自动加载此class
     }
     public static void on_jni_call(int type) {

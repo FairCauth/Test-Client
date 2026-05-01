@@ -1,5 +1,7 @@
 package com.test.mod.transformer.process.impl;
 
+import com.fair.preload.Preloader;
+import com.test.mod.Main;
 import com.test.mod.asm.tree.*;
 import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.TransformerException;
@@ -50,6 +52,7 @@ public class ShadowMethodProcess extends TransformerProcess<Shadow, Method> {
                                 methodInsnNode.name.equals(shadowName) &&
                                 methodInsnNode.desc.equals(shadowDesc)) {
                             founded = true;
+                            Preloader.send("Rewrite Shadow method: " + methodInsnNode.owner + " -> " + target.name);
                             System.out.println("Rewrite Shadow method: " + methodInsnNode.owner + " -> " + target.name);
                             methodInsnNode.owner = target.name;
                             if (annotation.remap())
