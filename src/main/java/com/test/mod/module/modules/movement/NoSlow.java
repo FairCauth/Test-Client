@@ -14,7 +14,7 @@ import java.util.Arrays;
 @ModuleInfo(name = {
         @Text(label = "NoSlow", language = Language.English),
         @Text(label = "无减速", language = Language.Chinese)
-}, category = Category.MOVEMENT)
+}, category = Category.Movement)
 public class NoSlow extends AbstractModule {
     @SettingInfo(name = {
             @Text(label = "Mode", language = Language.English),

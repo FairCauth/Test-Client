@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum Category {
-    COMBAT,
-    RENDER,
-    MOVEMENT,
-    MISC;
+    Combat,
+    Render,
+    Movement,
+    Misc;
 
     public static List<Category> getCategories(Category... blackList) {
         return Arrays.stream(Category.values()).filter(it ->

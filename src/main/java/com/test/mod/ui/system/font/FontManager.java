@@ -13,7 +13,6 @@ public class FontManager {
     public SkiaFont getFont(int size) {
         return get("misans.ttf", size);
     }
-
     public SkiaFont getUIFont(int size) {
         return get("ui.ttf", size);
     }

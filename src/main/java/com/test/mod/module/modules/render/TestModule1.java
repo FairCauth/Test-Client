@@ -18,7 +18,7 @@ import net.minecraft.network.chat.TextColor;
 @ModuleInfo(name = {
         @Text(label = "TestModule1", language = Language.English),
         @Text(label = "TestModule1", language = Language.Chinese)
-}, category = Category.RENDER)
+}, category = Category.Render)
 public class TestModule1 extends AbstractModule {
     @SettingInfo(name = {
             @Text(label = "TreeNode3-1", language = Language.English),

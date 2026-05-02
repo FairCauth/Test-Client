@@ -1,10 +1,13 @@
 package com.test.mod.ui.click.panels.settings;
 
 import com.test.mod.setting.settings.NumberSetting;
+import com.test.mod.ui.click.AuraSync;
 import com.test.mod.ui.click.ClickGuiScreen;
 import com.test.mod.ui.system.Render2D;
 import com.test.mod.ui.system.font.FontManager;
 import com.test.mod.ui.system.utils.CanvasStack;
+import com.test.mod.utils.animation.Direction;
+import com.test.mod.utils.animation.impl.DecelerateAnimation;
 
 import java.awt.*;
 import java.text.DecimalFormat;
@@ -14,6 +17,9 @@ public class NumberSettingPanel extends AbsSettingPanel<SettingWrapper<NumberSet
         super(settingWrapper, 25);
     }
     private boolean dragging = false;
+    private double targetProgress = -1;
+    private double animProgress = -1;
+    private final DecelerateAnimation dragAnim = new DecelerateAnimation(120, 1);
     @Override
     protected float onRender(CanvasStack canvasStack, float x, float y, float width) {
         FontManager.getFont(6).drawString(canvasStack, getSettingWrapper().getSetting().getName(), getX() + 5, getY() + 2, Color.WHITE.getRGB());
@@ -25,22 +31,45 @@ public class NumberSettingPanel extends AbsSettingPanel<SettingWrapper<NumberSet
                 getY() + 2,
                 Color.WHITE.getRGB()
         );
+        dragAnim.setDirection(dragging ? Direction.FORWARDS : Direction.BACKWARDS);
         if(dragging) {
-            double value = getSettingWrapper().getSetting().getMax() - getSettingWrapper().getSetting().getMin();
-            double val = getSettingWrapper().getSetting().getMin() + (clamp_float((float) ((ClickGuiScreen.mouseX - (getX() + 6)) / (double) (getWidth() - 12)), 0, 1)) * value;
-            double tmp;
+            double rawProgress = clamp_float(
+                    (float) ((ClickGuiScreen.mouseX - (getX() + 6)) / (double) (getWidth() - 12)),
+                    0, 1
+            );
+            targetProgress = rawProgress;
+
+            double range = getSettingWrapper().getSetting().getMax() - getSettingWrapper().getSetting().getMin();
+            double val = getSettingWrapper().getSetting().getMin() + rawProgress * range;
             DecimalFormat df = new DecimalFormat(getSettingWrapper().getSetting().getPrecisePattern());
             String str = df.format(val);
-            tmp = Double.parseDouble(str);
-            getSettingWrapper().getSetting().setValue(tmp);
+            getSettingWrapper().getSetting().setValue(Double.parseDouble(str));
         }
-        //一个很小的bug [笑哭] 括号
-        float progress = (float) ((getWidth() - 12) *
-                (getSettingWrapper().getSetting().getValue().doubleValue() - getSettingWrapper().getSetting().getMin())
-                / (getSettingWrapper().getSetting().getMax() - getSettingWrapper().getSetting().getMin()));
+        if (targetProgress < 0) {
+            targetProgress = (getSettingWrapper().getSetting().getValue().doubleValue()
+                    - getSettingWrapper().getSetting().getMin())
+                    / (getSettingWrapper().getSetting().getMax() - getSettingWrapper().getSetting().getMin());
+        }
+        animProgress += (targetProgress - animProgress) * 0.18; // 约 150ms 感知延迟
+        float trackWidth  = getWidth() - 12;
+        float filledWidth = (float) (trackWidth * animProgress);
+
+        double dragP      = dragAnim.getOutput();          // 0→1
+        float  thumbRadius = (float) (4 + (6 - 4) * dragP);
+
+
+//        float progress = (float) ((getWidth() - 12) *
+//                (getSettingWrapper().getSetting().getValue().doubleValue() - getSettingWrapper().getSetting().getMin())
+//                / (getSettingWrapper().getSetting().getMax() - getSettingWrapper().getSetting().getMin()));
         Render2D.drawRect(canvasStack, getX() + 6, getY() + 14, getWidth() - 12, 5,4,new Color(99, 99, 99,200).getRGB());
-        Render2D.drawRect(canvasStack, getX() + 6, getY() + 14, progress, 5,4,new Color(183, 183, 183,200).getRGB());
-        Render2D.drawCircle(canvasStack, getX() + 6 + progress + (4 / 2f) - 1.5f, getY() + 16.5f, 4, Color.WHITE.getRGB());
+        Render2D.drawRect(canvasStack, getX() + 6, getY() + 14, filledWidth, 5,4, AuraSync.getAuraColor(index));
+
+
+        Render2D.drawCircle(canvasStack,
+                getX() + 5 + filledWidth + (4 / 2f) - 1.5f,
+                getY() + 16.5f,
+                thumbRadius,
+                Color.WHITE.getRGB());
 
         return 0;
     }

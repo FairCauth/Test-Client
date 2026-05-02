@@ -1,6 +1,7 @@
 package com.test.mod.ui.click.panels.settings;
 
 import com.test.mod.setting.settings.BooleanSetting;
+import com.test.mod.ui.click.AuraSync;
 import com.test.mod.ui.click.ClickGuiScreen;
 import com.test.mod.ui.system.Render2D;
 import com.test.mod.ui.system.font.FontManager;
@@ -15,25 +16,58 @@ public class BooleanSettingPanel extends AbsSettingPanel<SettingWrapper<BooleanS
         super(settingWrapper, 15);
     }
     public DecelerateAnimation animation = new DecelerateAnimation(200, 1);
+
+
+    private float BASE_RADIUS = 4f;
+    private float BURST_RADIUS = 5.5f;
+    private float STIFFNESS = 140f;
+    private float DAMPING = 12f;
+    private float springPos = BASE_RADIUS;
+    private float springVel = 0f;
+    private long lastTime = -1;
     @Override
     protected float onRender(CanvasStack canvasStack, float x, float y, float width) {
+
         FontManager.getFont(8).drawString(canvasStack, getSettingWrapper().getSetting().getName(), getX() + 5, getY() + 2, Color.WHITE.getRGB());
         animation.setDirection(getSettingWrapper().getSetting().getValue() ? Direction.FORWARDS : Direction.BACKWARDS);
         float buttonWidth = 20, buttonHeight = 10;
         //int enabledColor = new Color();
         boolean enabled = getSettingWrapper().getSetting().getValue();
+        double progress = animation.getOutput();
+
+
+        long now = System.currentTimeMillis();
+        if (lastTime < 0) lastTime = now;
+        float dt = Math.min((now - lastTime) / 1000f, 0.05f);
+        lastTime = now;
+        // F = -k*(pos - target)-damping*vel
+        float force = -STIFFNESS * (springPos - BASE_RADIUS) - DAMPING * springVel;
+        springVel += force * dt;
+        springPos += springVel * dt;
+        if (Math.abs(springPos - BASE_RADIUS) < 0.01f && Math.abs(springVel) < 0.1f) {
+            springPos = BASE_RADIUS;
+            springVel = 0f;
+        }
+        float thumbRadius = springPos;
+
+
+        int auraColor = AuraSync.getAuraColor(index);
+        int smoothCircle = lerpColor(new Color(144,144,144,200).getRGB(), Color.WHITE.getRGB() ,(float) progress);
+        int smoothCircle2 = lerpColor(new Color(77,77,77,200).getRGB(), auraColor ,(float) progress);
+        int smoothCircle3 = lerpColor(new Color(89,98,89,200).getRGB(), auraColor ,(float) progress);
 
         //outline
         float outline = 1;
-        double progress = animation.getOutput();
         Render2D.drawRect(canvasStack, getX() + getWidth() - buttonWidth - 5 - outline, getY() + 2 -outline, buttonWidth + outline * 2, buttonHeight +outline*2, 10,
-                new Color(89,98,89,200).getRGB());
-        int smoothCircle = lerpColor(new Color(144,144,144,200).getRGB(), Color.WHITE.getRGB() ,(float) progress);
-        Render2D.drawRect(canvasStack, getX() + getWidth() - buttonWidth - 5, getY() + 2, buttonWidth, buttonHeight, 10,new Color(77,77,77,200).getRGB());
+                smoothCircle3);
+
+
+        Render2D.drawRect(canvasStack, getX() + getWidth() - buttonWidth - 5, getY() + 2,
+                buttonWidth, buttonHeight, 10,smoothCircle2);
         Render2D.drawCircle(canvasStack,
                 getX() + getWidth() - buttonWidth + (float) (progress * 10),
                 getY() + 7,
-                4,smoothCircle
+                thumbRadius,smoothCircle
         );
         return 0;
     }
@@ -61,6 +95,8 @@ public class BooleanSettingPanel extends AbsSettingPanel<SettingWrapper<BooleanS
     public void mouseClicked(double p_94695_, double p_94696_, int p_94697_) {
         if(ClickGuiScreen.isHovered(getX(), getY(), getWidth(), getHeight())) {
             if(p_94697_ == 0)  {
+                springPos = BURST_RADIUS;
+                springVel = 0f;
                 getSettingWrapper().getSetting().setValue(!getSettingWrapper().getSetting().getValue());
             }
 

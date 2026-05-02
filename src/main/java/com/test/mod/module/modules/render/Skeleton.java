@@ -34,7 +34,7 @@ import java.util.List;
 @ModuleInfo(name = {
         @Text(label = "Skeleton", language = Language.English),
         @Text(label = "Skeleton", language = Language.Chinese)
-}, category = Category.RENDER)
+}, category = Category.Render)
 public class Skeleton extends AbstractModule {
     @SettingInfo(name = {
             @Text(label = "Mode", language = Language.English),

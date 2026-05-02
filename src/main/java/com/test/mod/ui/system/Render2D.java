@@ -8,6 +8,7 @@ import com.test.mod.ui.system.utils.ImageUtil;
 
 import com.test.mod.utils.IMinecraft;
 import io.github.humbleui.skija.*;
+import io.github.humbleui.types.Point;
 import io.github.humbleui.types.RRect;
 import io.github.humbleui.types.Rect;
 import lombok.experimental.UtilityClass;
@@ -26,6 +27,11 @@ public class Render2D implements IMinecraft {
 
         BlurUtil.draw(stack, x, y, width, height, radius, blurRadius, alpha);
     }
+    public void drawRoundedBlur(CanvasStack stack, float x, float y, float width, float height, float topLeftRadius, float topRightRadius, float bottomRightRadius, float bottomLeftRadius
+            , float blurRadius) {
+
+        BlurUtil.drawRounded(stack, x, y, width, height, topLeftRadius,topRightRadius,bottomRightRadius,bottomLeftRadius, blurRadius,255);
+    }
 
     public void drawRectBlur(CanvasStack stack, float x, float y, float width, float height, float radius, float blurRadius) {
         drawRectBlur(stack, x, y, width, height, radius,blurRadius,  255);
@@ -42,6 +48,19 @@ public class Render2D implements IMinecraft {
     public void drawRect(CanvasStack stack, float x, float y, float width, float height, int color) {
         drawRect(stack,x,y,width,height,0,color);
     }
+    public static void drawVerticalGradient(CanvasStack canvasStack, float x, float y, float width, float height, int startColor, float radius, int endColor) {
+        Shader shader = Shader.makeLinearGradient(new Point(x, y), new Point(x, y + height), new int[]{startColor, endColor}, new float[]{0, 1});
+        paint.reset();
+        paint.setShader(shader);
+
+        if (radius > 0) {
+            canvasStack.canvas.drawRRect(RRect.makeXYWH(x, y, width, height, radius), paint);
+        } else {
+            canvasStack.canvas.drawRect(Rect.makeXYWH(x, y, width, height), paint);
+        }
+        paint.setShader(null);
+        shader.close();
+    }
     public void drawRect(CanvasStack stack, float x, float y, float width, float height, float radius, int color) {
         if (width <= 0 || height <= 0 || (color >> 24 & 0xFF) == 0) return;
 
@@ -54,6 +73,28 @@ public class Render2D implements IMinecraft {
         } else {
             stack.canvas.drawRect(Rect.makeXYWH(x, y, width, height), paint);
         }
+    }
+    public void drawRoundedRect(CanvasStack canvasStack, float x, float y, float width, float height,
+                                float topLeftRadius, float topRightRadius, float bottomRightRadius, float bottomLeftRadius,
+                                int color) {
+        if (width <= 0 || height <= 0 || (color >> 24 & 0xFF) == 0) return;
+
+        paint.reset();
+        paint.setColor(color);
+        paint.setAntiAlias(true);
+        ImageFilter blurFilter = ImageFilter.makeBlur(.5f, .5f, FilterTileMode.DECAL);
+        paint.setImageFilter(blurFilter);
+
+        float[] radii = {
+                (topLeftRadius), (topLeftRadius),
+                (topRightRadius), (topRightRadius),
+                (bottomRightRadius), (bottomRightRadius),
+                (bottomLeftRadius), (bottomLeftRadius)
+        };
+        RRect rect = RRect.makeComplexXYWH(x, y, width, height, radii);
+        canvasStack.canvas.drawRRect(rect, paint);
+        paint.setImageFilter(null);
+        blurFilter.close();
     }
     public void drawCircle(CanvasStack canvasStack, float x, float y, float radius, int color) {
         if (canvasStack == null || canvasStack.canvas == null) {

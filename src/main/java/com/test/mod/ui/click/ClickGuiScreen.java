@@ -20,14 +20,15 @@ import java.util.List;
 public class ClickGuiScreen extends Screen implements IMinecraft {
     public static float mouseX, mouseY;
     public static Category activeCategory;
+    public static float visibleHeight = 200;
     public ArrayList<AbstractPanel> abstractPanels = new ArrayList<>();
     public ClickGuiScreen(Component p_96550_) {
         super(p_96550_);
         EventManager.register(this);
 
-        float categoryX = 10, categoryWidth = 130;
+        float categoryX = 10, categoryWidth = 120;
         for (Category category : Category.getCategories()) {
-            addPanel(new CategoryPanel(category, categoryX, 10, categoryWidth, 30));
+            addPanel(new CategoryPanel(category, categoryX, 10, categoryWidth, 28));
             categoryX += categoryWidth + 10;
         }
     }
@@ -86,8 +87,7 @@ public class ClickGuiScreen extends Screen implements IMinecraft {
     @Override
     public boolean mouseReleased(double p_94722_, double p_94723_, int p_94724_) {
         for (AbstractPanel abstractPanel : abstractPanels) {
-            if(abstractPanel.getCategory().equals(activeCategory))
-                abstractPanel.mouseReleased(p_94722_, p_94723_, p_94724_);
+            abstractPanel.mouseReleased(p_94722_, p_94723_, p_94724_);
         }
        return super.mouseReleased(p_94722_, p_94723_, p_94724_);
     }

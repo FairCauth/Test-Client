@@ -3,6 +3,7 @@ package com.test.mod.ui.click.panels.settings;
 import com.test.mod.ui.system.Render2D;
 import com.test.mod.ui.system.utils.CanvasStack;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.awt.*;
 
@@ -13,6 +14,9 @@ public abstract class AbsSettingPanel<T extends SettingWrapper<?>> {
     protected float x, y, width, height;
     @Getter
     private float baseHeight;
+
+    @Setter
+    protected int index;
     public AbsSettingPanel(T settingWrapper, float baseHeight) {
         this.settingWrapper = settingWrapper;
         this.baseHeight = baseHeight;

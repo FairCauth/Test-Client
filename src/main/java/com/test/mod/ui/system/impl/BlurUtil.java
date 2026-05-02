@@ -143,4 +143,41 @@ half4 main(float2 fragCoord) {
             blurPaint.setImageFilter(null);
         }
     }
+    public void drawRounded(CanvasStack stack, float x, float y, float width, float height,
+                     float topLeftRadius, float topRightRadius, float bottomRightRadius, float bottomLeftRadius
+            , float blurRadius, int alpha) {
+        if (width <= 0 || height <= 0 || alpha <= 0) return;
+
+        try (ImageFilter blur = ImageFilter.makeBlur(blurRadius, blurRadius, FilterTileMode.CLAMP)) {
+            blurPaint.setAlpha(alpha);
+            blurPaint.setImageFilter(blur);
+
+            stack.push();
+
+
+            blurPaint.setAntiAlias(true);
+
+            float[] radii = {
+                    (topLeftRadius), (topLeftRadius),
+                    (topRightRadius), (topRightRadius),
+                    (bottomRightRadius), (bottomRightRadius),
+                    (bottomLeftRadius), (bottomLeftRadius)
+            };
+            RRect rect = RRect.makeComplexXYWH(x, y, width, height, radii);
+
+            stack.canvas.clipRRect(rect, true);
+
+
+            stack.canvas.resetMatrix();
+            Image image = ImageUtil.getTextureImage(stack.context);
+            if (image != null) {
+                stack.canvas.drawImage(image, 0, 0, blurPaint);
+            }
+
+            stack.pop();
+        } finally {
+            blurPaint.setImageFilter(null);
+        }
+    }
+
 }

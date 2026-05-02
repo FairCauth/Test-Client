@@ -9,14 +9,12 @@ import com.test.mod.setting.annotation.SettingInfo;
 import com.test.mod.setting.settings.BooleanSetting;
 import com.test.mod.setting.settings.ModeSetting;
 import com.test.mod.setting.settings.NumberSetting;
-import com.test.mod.transformer.transformers.MinecraftTransformer;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.Arrays;
 
 @ModuleInfo(name =
 @Text(label = "Test", language = Language.English),
-        category = Category.COMBAT
+        category = Category.Combat
 )
 public class Test extends AbstractModule {
     @SettingInfo(name = {

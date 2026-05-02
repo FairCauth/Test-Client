@@ -18,7 +18,7 @@ import java.util.Arrays;
 @ModuleInfo(name = {
         @Text(label = "AimAssist", language = Language.English),
         @Text(label = "自瞄", language = Language.Chinese)
-}, category = Category.COMBAT)
+}, category = Category.Combat)
 public class AimAssist extends AbstractModule {
     @SettingInfo(name = {
             @Text(label = "Range", language = Language.English),

@@ -14,7 +14,7 @@ import java.awt.*;
 @ModuleInfo(name = {
         @Text(label = "BackTrack", language = Language.English),
         @Text(label = "回溯", language = Language.Chinese)
-}, category = Category.MOVEMENT)
+}, category = Category.Movement)
 public class Backtrack extends AbstractModule {
     @SettingInfo(name = {
             @Text(label = "Range", language = Language.English),

@@ -43,7 +43,7 @@ public class SkiaFont {
     }
 
     public static SkiaFont create(String fileName, int size) {
-        Path fontPath = Path.of("C:\\Test", "fonts", fileName);
+        Path fontPath = Path.of("C:\\Test", "lib", fileName);
         try {
             Data fontData = Data.makeFromFileName(fontPath.toString());
             Typeface typeface = Typeface.makeFromData(fontData);

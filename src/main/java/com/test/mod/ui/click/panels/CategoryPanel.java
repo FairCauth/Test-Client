@@ -24,24 +24,30 @@ public class CategoryPanel extends AbstractPanel {
             modulePanels.add(new ModulePanel(abstractModule, category));
         }
     }
+    private float totalHeight = 0;
+    private float visibleHeight = 0;
 
     @Override
     protected float onRender(CanvasStack canvasStack) {
-        Render2D.drawRect(canvasStack, getX(), getY(), getWidth(), getHeight(), 5, new Color(33,33,33).getRGB());
-        FontManager.getFont(16).drawString(canvasStack, getCategory().name(), getX() + 8, getY() + 4, Color.WHITE.getRGB());
+//        Render2D.drawRect(canvasStack, getX(), getY(), getWidth(), getHeight(), 5, new Color(33,33,33).getRGB());
+//        FontManager.getFont(16).drawString(canvasStack, getCategory().name(), getX() + 8, getY() + 4, Color.WHITE.getRGB());
+        float panelHeight = Math.min(totalHeight, ClickGuiScreen.visibleHeight);
+        visibleHeight = (float) openingAnimation.getOutput() * panelHeight;
 
         float moduleY = getY() + getHeight() + scrollBar.getAnimatedScroll();
         float moduleHeight = 18;
-        float totalHeight = 0;
+        totalHeight = 0;
 
         canvasStack.push();
         Render2D.scissorRect(canvasStack, getX(),getY() + getHeight(), getWidth(), visibleHeight, ClipMode.INTERSECT);
-
+        drawBackground(canvasStack, panelHeight);
+        int index = 0;
         for (ModulePanel modulePanel : modulePanels) {
+            modulePanel.setIndex(index);
             float offsetHeight = modulePanel.onRender(canvasStack, getX(), moduleY, getWidth(), moduleHeight);
             moduleY += moduleHeight + offsetHeight;
             totalHeight += moduleHeight + offsetHeight;
-
+            ++index;
         }
         canvasStack.pop();
         scrollBar.onTick(totalHeight, visibleHeight);
@@ -70,11 +76,12 @@ public class CategoryPanel extends AbstractPanel {
     public void mouseReleased(double p_94722_, double p_94723_, int p_94724_) {
         super.mouseReleased(p_94722_,p_94723_,p_94724_);
         scrollBar.mouseRelease();
-        if(ClickGuiScreen.isHovered(getX(), getY() + getHeight(), getWidth(), visibleHeight)) {
+
+//        if(ClickGuiScreen.isHovered(getX(), getY() + getHeight(), getWidth(), visibleHeight)) {
             for (ModulePanel modulePanel : modulePanels) {
                 modulePanel.mouseReleased(p_94722_,p_94723_,p_94724_);
             }
-        }
+//        }
 
     }
 

@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFW;
 
 @ModuleInfo(name =
 @Text(label = "ClickGui", language = Language.English),
-        category = Category.RENDER, key = GLFW.GLFW_KEY_RIGHT_SHIFT
+        category = Category.Render, key = GLFW.GLFW_KEY_RIGHT_SHIFT
 )
 public class ClickGui extends AbstractModule {
 //    @EventTarget

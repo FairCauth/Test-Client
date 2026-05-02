@@ -31,7 +31,7 @@ import java.util.Map;
 @ModuleInfo(name = {
         @Text(label = "ESP2D", language = Language.English),
         @Text(label = "ESP2D", language = Language.Chinese)
-}, category = Category.RENDER)
+}, category = Category.Render)
 public class ESP2D extends AbstractModule {
     public static class ESPU {
         public LivingEntity entity;

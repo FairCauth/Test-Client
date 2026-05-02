@@ -18,7 +18,7 @@ import java.util.Arrays;
 @ModuleInfo(name = {
         @Text(label = "NameTags", language = Language.English),
         @Text(label = "名字标签", language = Language.Chinese)
-}, category = Category.RENDER)
+}, category = Category.Render)
 public class NameTags extends AbstractModule {
     @SettingInfo(name = {
             @Text(label = "Health", language = Language.English),

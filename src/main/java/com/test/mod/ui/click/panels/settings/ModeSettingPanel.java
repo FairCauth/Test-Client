@@ -21,14 +21,22 @@ public class ModeSettingPanel extends AbsSettingPanel<SettingWrapper<ModeSetting
         FontManager.getFont(6).drawString(canvasStack, getSettingWrapper().getSetting().getName(), getX() + 5, getY() + 2, Color.WHITE.getRGB());
 
         //value
-        Render2D.drawRect(canvasStack, getX() + 7, getY() + 10, getWidth() - 14, 15 + (expand ? getSettingWrapper().getSetting().getModes().size() * 14 : 0),4, new Color(122,122,122,160).getRGB());
+        Render2D.drawRect(canvasStack, getX() + 7, getY() + 10, getWidth() - 14, 15 + (expand ? getSettingWrapper().getSetting().getModes().size() * 14 : 0),4,
+                new Color(80,80,80,130).getRGB());
         FontManager.getFont(9).drawString(canvasStack, getSettingWrapper().getSetting().getValue(), getX() + 10, getY() + 11, Color.WHITE.getRGB());
 
         float valuesHeight = 0;
         if(expand) {
             float valuesY = getY() + getHeight();
             for (String mode : getSettingWrapper().getSetting().getModes()) {
+
                 Render2D.drawRect(canvasStack, getX(), valuesY, getWidth(), 14, 0, new Color(22,22,22,150).getRGB());
+
+
+                if(ClickGuiScreen.isHovered(getX(), valuesY, getWidth(), 14)) {
+                    Render2D.drawRect(canvasStack, getX()+ 7, valuesY, getWidth()- 14, 14, 0, new Color(84, 84, 84, 115).getRGB());
+
+                }
                 FontManager.getFont(9).drawString(canvasStack,mode, getX() + 13, valuesY, Color.WHITE.getRGB());
                 valuesHeight += 14;
                 valuesY += 14;
