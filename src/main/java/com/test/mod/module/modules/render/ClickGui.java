@@ -29,4 +29,19 @@ public class ClickGui extends AbstractModule {
         super.onEnable();
         toggle();
     }
+
+    @Override
+    public void cleanup() {
+        if (dropdownGui != null) {
+            if (mc.screen == dropdownGui) {
+                mc.execute(() -> {
+                    mc.setScreen(null);
+                    dropdownGui.cleanup();
+                    dropdownGui = null;
+                });
+            }
+
+        }
+
+    }
 }

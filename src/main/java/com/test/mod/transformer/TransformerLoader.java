@@ -27,6 +27,7 @@ public class TransformerLoader {
     //class name
     private final Map<String, Class<? extends ITransformer>> transformerMap = new HashMap<>();
     private final TransformerProcessManager transformerProcessManager = new TransformerProcessManager();
+    private final Map<Class<?>, byte[]> originalBytecodeMap = new HashMap<>();
 
     public TransformerLoader() {
         add(
@@ -65,6 +66,7 @@ public class TransformerLoader {
                 try {
 
                     byte[] classByte = CoreNative.getClassBytes(targetClass);
+                    originalBytecodeMap.put(targetClass, classByte);
                     if (classByte == null)
                         throw new TransformerException(className + " transformer getClassBytes error");
                     //获取mixin class字节
@@ -185,6 +187,20 @@ public class TransformerLoader {
 //            transformerProcessManager.matchMethod(method, classNode,mixinClassNode,iTransformer);
 //        }
 //    }
+    public void cleanup() {
+
+        for (Map.Entry<Class<?>, byte[]> entry : originalBytecodeMap.entrySet()) {
+            int errorCode = CoreNative.redefineClasses(entry.getKey(), entry.getValue());
+            if (errorCode != 0) {
+                System.out.println("restore failed: " + entry.getKey().getName() + " error " + errorCode);
+            }else{
+                System.out.println("restore " + entry.getKey().getName());
+            }
+
+        }
+        originalBytecodeMap.clear();
+        transformerMap.clear();
+    }
     @SafeVarargs
     private void add(Class<? extends ITransformer>... iTransformers) {
         for (Class<? extends ITransformer> iTransformer : iTransformers) {

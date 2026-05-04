@@ -97,7 +97,7 @@ public class Skia implements IMinecraft {
         }
 
         if (context != null) {
-            context.abandon();
+            context.close();
         }
 
         surface = null;

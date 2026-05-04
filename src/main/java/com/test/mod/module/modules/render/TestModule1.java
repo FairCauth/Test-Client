@@ -1,5 +1,7 @@
 package com.test.mod.module.modules.render;
 
+import com.fair.preload.Preloader;
+import com.test.mod.Main;
 import com.test.mod.language.Language;
 import com.test.mod.language.Text;
 import com.test.mod.module.AbstractModule;
@@ -26,8 +28,8 @@ public class TestModule1 extends AbstractModule {
     })
     private final BooleanSetting d = new BooleanSetting(false);
     @SettingInfo(name = {
-            @Text(label = "TreeNode2-1", language = Language.English),
-            @Text(label = "TreeNode2-1", language = Language.Chinese)
+            @Text(label = "TreeNode2-2", language = Language.English),
+            @Text(label = "TreeNode2-2", language = Language.Chinese)
     })
     private final BooleanSetting b = new BooleanSetting(false,
             new SettingAttribute<>(d, true)

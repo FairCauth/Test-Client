@@ -1,6 +1,7 @@
 package com.test.mod.module;
 
 import com.darkmagician6.eventapi.EventManager;
+import com.test.mod.Main;
 import com.test.mod.language.Language;
 import com.test.mod.language.Text;
 import com.test.mod.module.annotation.ModuleInfo;
@@ -57,6 +58,8 @@ public class AbstractModule extends SettingManager implements IMinecraft {
             EventManager.unregister(this);
             onDisable();
         }
+        if(Main.INSTANCE.externalGui == null) return;
+        Main.INSTANCE.externalGui.updateModules();
     }
     public String getName() {
         return Language.getLabel(getTexts(), Language.getLanguage());
@@ -65,4 +68,8 @@ public class AbstractModule extends SettingManager implements IMinecraft {
     protected void onEnable() {}
 
     protected void onDisable() {}
+
+    public void cleanup() {
+
+    }
 }

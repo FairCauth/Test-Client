@@ -115,9 +115,12 @@ public class ModulePanel {
                 settingPanelOpened = !settingPanelOpened;
             }
         }
-        for (AbsSettingPanel<?> settingPanel : settingPanels) {
-            settingPanel.mouseClicked(p_94695_,p_94696_,p_94697_);
+        if(settingPanelOpened) {
+            for (AbsSettingPanel<?> settingPanel : settingPanels) {
+                settingPanel.mouseClicked(p_94695_,p_94696_,p_94697_);
+            }
         }
+
     }
 
 

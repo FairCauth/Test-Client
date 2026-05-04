@@ -41,7 +41,8 @@ public class SkiaManager implements IMinecraft {
         }
     }
 
-    public void destroy() {
+    public void cleanup() {
+        EventManager.unregister(this);
         skia.cleanup();
     }
 }

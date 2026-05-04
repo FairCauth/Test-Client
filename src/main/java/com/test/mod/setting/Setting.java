@@ -1,5 +1,8 @@
 package com.test.mod.setting;
 
+import com.fair.preload.Preloader;
+import com.google.gson.JsonObject;
+import com.test.mod.Main;
 import com.test.mod.language.Language;
 import com.test.mod.language.Text;
 import com.test.mod.setting.attribute.SettingAttribute;
@@ -95,6 +98,9 @@ public abstract class Setting<T> {
 
     private void onValueChangedFirst() {
         SettingManager.updateDisplay(SettingManager.getSettings());
+
+        //external ui
+        Main.INSTANCE.externalGui.updateSettings();
         onValueChanged();
     }
     public int getAncestorCount() {

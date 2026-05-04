@@ -45,7 +45,7 @@ public class NumberSettingPanel extends AbsSettingPanel<SettingWrapper<NumberSet
             String str = df.format(val);
             getSettingWrapper().getSetting().setValue(Double.parseDouble(str));
         }
-        if (targetProgress < 0) {
+        if (!dragging) {
             targetProgress = (getSettingWrapper().getSetting().getValue().doubleValue()
                     - getSettingWrapper().getSetting().getMin())
                     / (getSettingWrapper().getSetting().getMax() - getSettingWrapper().getSetting().getMin());

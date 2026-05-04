@@ -5,6 +5,8 @@ import com.darkmagician6.eventapi.EventTarget;
 import com.test.mod.events.EventKey;
 import com.test.mod.module.modules.combat.AimAssist;
 import com.test.mod.module.modules.combat.Test;
+import com.test.mod.module.modules.misc.ExternalGui;
+import com.test.mod.module.modules.misc.SelfDestruct;
 import com.test.mod.module.modules.movement.Backtrack;
 import com.test.mod.module.modules.movement.NoSlow;
 import com.test.mod.module.modules.render.*;
@@ -22,8 +24,14 @@ public class ModuleManager {
         add(new ClickGui());
         add(new Skeleton());
         add(new Test(), new AimAssist());
-        add(new Backtrack(), new NoSlow(), new Backtrack(), new NameTags(), new TestModule1(), new ESP2D());
+        add(new Backtrack(), new NoSlow(), new NameTags(), new TestModule1(), new ESP2D(), new SelfDestruct(), new ExternalGui());
         EventManager.register(this);
+    }
+    public AbstractModule getModule(String name) {
+        for (AbstractModule abstractModule : moduleList) {
+            if(abstractModule.getName().equals(name)) return abstractModule;
+        }
+        return null;
     }
     public ArrayList<AbstractModule> getModulesByCategory(Category category) {
         ArrayList<AbstractModule> list = new ArrayList<>();
@@ -47,5 +55,15 @@ public class ModuleManager {
             }
         }
     }
-
+    public void cleanup() {
+        for (AbstractModule m : moduleList) {
+            if (m.isEnable()) {
+                m.toggle();
+            }
+            EventManager.unregister(m);
+            m.cleanup();
+        }
+        moduleList.clear();
+        EventManager.unregister(this);
+    }
 }

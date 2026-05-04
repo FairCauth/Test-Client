@@ -12,16 +12,14 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.openjdk.nashorn.internal.objects.annotations.Getter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ClickGuiScreen extends Screen implements IMinecraft {
     public static float mouseX, mouseY;
     public static Category activeCategory;
     public static float visibleHeight = 200;
-    public ArrayList<AbstractPanel> abstractPanels = new ArrayList<>();
+    public CopyOnWriteArrayList<AbstractPanel> abstractPanels = new CopyOnWriteArrayList<>();
     public ClickGuiScreen(Component p_96550_) {
         super(p_96550_);
         EventManager.register(this);
@@ -31,6 +29,15 @@ public class ClickGuiScreen extends Screen implements IMinecraft {
             addPanel(new CategoryPanel(category, categoryX, 10, categoryWidth, 28));
             categoryX += categoryWidth + 10;
         }
+    }
+    public void cleanup() {
+        EventManager.unregister(this);
+//        Iterator<AbstractPanel> abstractPanelIterator = abstractPanels.iterator();
+//        while (abstractPanelIterator.hasNext()) {
+//            abstractPanelIterator.remove();
+//            abstractPanelIterator.next();
+//        }
+        activeCategory = null;
     }
     private void sortPanel(int a) {
         int b = abstractPanels.size() - 1;

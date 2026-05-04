@@ -40,8 +40,6 @@ public class ExampleMod
     @SuppressWarnings("all")
     public ExampleMod()
     {
-
-
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         modEventBus.addListener(this::commonSetup);
 

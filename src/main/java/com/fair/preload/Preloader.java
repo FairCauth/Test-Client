@@ -8,19 +8,51 @@ import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.util.function.Consumer;
 //此类只用于加载自身jar class
 //注入Core.dll时会先加载此类 此类保存在Core里 在这里改完注入完不生效。
 
 //registerNatives用于注册NativeBridge的所有native方法
 public class Preloader extends Thread {
+    private static Consumer<String> messageHandler;
     private static Socket socket;
     private static PrintWriter out;
     private static BufferedReader in;
+    private static Thread listenerThread;
+    public static void setMessageHandler(Consumer<String> handler) {
+        messageHandler = handler;
+    }
+    public static void startListening() {
+        listenerThread = new Thread(() -> {
+            try {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    if (messageHandler != null) {
+                        messageHandler.accept(line);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("连接断开: " + e.getMessage());
+            } finally {
+                try { if (socket != null) socket.close(); } catch (Exception ignored) {}
+                socket = null;
+                out = null;
+                in = null;
+            }
+        });
+        listenerThread.setDaemon(true);  // 主线程退出时自动结束
+        listenerThread.start();
+    }
     public static void connect(String host, int port) {
+        if (socket != null && socket.isConnected() && !socket.isClosed()) {
+            System.out.println("已经连接");
+            return;
+        }
         try {
             socket = new Socket(host, port);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            startListening();
             System.out.println("已连接到服务器");
         }catch (Exception e) {
             e.printStackTrace();
