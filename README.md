@@ -1,6 +1,9 @@
 # Test Client
 一个完全开源的1.20.1 Forge可注入式客户端Base
 
+### 游戏截图
+![截图](assets/screenshot1.png)
+
 ### 核心Dll https://github.com/FairCauth/Core-Injection.git
 
 ## 运行结构
