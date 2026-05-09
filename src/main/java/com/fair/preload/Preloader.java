@@ -83,6 +83,7 @@ public class Preloader extends Thread {
 
     public static String MAIN_PATH = "C:\\Test\\lib";
 
+    public static String CORE_DLL = "Core.dll";
     public byte[][] classes;
     public static Class<?> mainClazz = null;
     public ClassLoader classLoader;
@@ -101,7 +102,7 @@ public class Preloader extends Thread {
         connect("127.0.0.1", 9999);
         MAIN_PATH = sendAndWait("run!");
         send("path " + MAIN_PATH);
-        System.load(MAIN_PATH + "\\Core.dll");
+        System.load(MAIN_PATH + "\\" + CORE_DLL);
         try {
             Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
             Field field = unsafeClass.getDeclaredField("theUnsafe");
