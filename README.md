@@ -74,7 +74,7 @@ public class MinecraftTransformer implements ITransformer {
 }
 ```
 
-**2. 在 [`TransformerLoader`](链接到文件) 的构造函数中注册**
+**2. 在 [`TransformerLoader`](https://github.com/FairCauth/Test-Client/blob/master/src/main/java/com/test/mod/transformer/TransformerLoader.java) 的构造函数中注册**
 
 ```java
 public TransformerLoader() {
