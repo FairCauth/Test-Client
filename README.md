@@ -33,9 +33,10 @@ flowchart LR
 https://b23.tv/sqG10CV
 # Part1 功能介绍
 - 支持 MOD 启动模式与 DLL 注入模式双启动
+- 注入基于jvmti无需java agent
 - 基于Skia的2D屏幕绘制
 - 支持外置Gui
-- 内置类Mixin字节码修改框架
+- 内置完全开源的仿Mixin字节码修改框架
 - 与`Core.dll`紧密联系 方便操作jni
 - Module与Setting Base已全部完善 支持树形设置
 
