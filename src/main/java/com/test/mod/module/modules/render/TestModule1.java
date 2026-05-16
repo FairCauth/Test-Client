@@ -10,6 +10,7 @@ import com.test.mod.module.annotation.ModuleInfo;
 import com.test.mod.setting.annotation.SettingInfo;
 import com.test.mod.setting.attribute.SettingAttribute;
 import com.test.mod.setting.settings.BooleanSetting;
+import com.test.mod.setting.settings.ModeSetting;
 import com.test.mod.transformer.transformers.MinecraftTransformer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -17,37 +18,56 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 
+import java.util.Arrays;
+
 @ModuleInfo(name = {
         @Text(label = "TestModule1", language = Language.English),
         @Text(label = "TestModule1", language = Language.Chinese)
 }, category = Category.Render)
 public class TestModule1 extends AbstractModule {
     @SettingInfo(name = {
-            @Text(label = "TreeNode3-1", language = Language.English),
-            @Text(label = "TreeNode3-1", language = Language.Chinese)
+            @Text(label = "TreeNode3-1", language = Language.English)
     })
     private final BooleanSetting d = new BooleanSetting(false);
     @SettingInfo(name = {
-            @Text(label = "TreeNode2-2", language = Language.English),
-            @Text(label = "TreeNode2-2", language = Language.Chinese)
+            @Text(label = "TreeNode2-2", language = Language.English)
     })
     private final BooleanSetting b = new BooleanSetting(false,
             new SettingAttribute<>(d, true)
     );
 
     @SettingInfo(name = {
-            @Text(label = "TreeNode2-1", language = Language.English),
-            @Text(label = "TreeNode2-1 ", language = Language.Chinese)
+            @Text(label = "TreeNode2-1", language = Language.English)
     })
     private final BooleanSetting c = new BooleanSetting(false);
 
     @SettingInfo(name = {
-            @Text(label = "TreeNode1", language = Language.English),
-            @Text(label = "TreeNode1 ", language = Language.Chinese)
+            @Text(label = "TreeNode1", language = Language.English)
     })
     private final BooleanSetting a = new BooleanSetting(false,
             new SettingAttribute<>(b, true),
             new SettingAttribute<>(c, true)
+    );
+
+    @SettingInfo(name = {
+            @Text(label = "Setting1", language = Language.English)
+    })
+    private final BooleanSetting setting1 = new BooleanSetting(false);
+    @SettingInfo(name = {
+            @Text(label = "Setting2", language = Language.English)
+    })
+    private final BooleanSetting setting2 = new BooleanSetting(false);
+    @SettingInfo(name = {
+            @Text(label = "Setting3", language = Language.English)
+    })
+    private final BooleanSetting setting3 = new BooleanSetting(false);
+    @SettingInfo(name = {
+            @Text(label = "Mode", language = Language.English)
+    })
+    private final ModeSetting mode = new ModeSetting("ModeA", Arrays.asList("ModeA", "ModeB", "ModeC"),
+            new SettingAttribute<>(setting1, "ModeA"),
+            new SettingAttribute<>(setting2, "ModeB"),
+            new SettingAttribute<>(setting3, "ModeA", "ModeB", "ModeC")
     );
     public TestModule1() {
         registerSetting(a);

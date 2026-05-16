@@ -9,11 +9,67 @@ import com.test.mod.setting.settings.BooleanSetting;
 import com.test.mod.setting.settings.ModeSetting;
 import com.test.mod.setting.settings.NumberSetting;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 public class ExternalGui {
+    private static final Gson gson = new Gson();
     public ExternalGui() {
         Preloader.setMessageHandler(this::onMessage);
+        startServer(8888);
     }
-    private static final Gson gson = new Gson();
+    private ServerSocket serverSocket;
+    public void stopServer() {
+        try {
+            if (serverSocket != null) serverSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void startServer(int port) {
+        new Thread(() -> {
+            try {
+                serverSocket = new ServerSocket(port);
+                System.out.println("Java已启动，监听端口: " + port);
+                while (true) {
+                    Socket client = serverSocket.accept();
+                    System.out.println("客户端连接: "
+                            + client.getInetAddress()
+                            + ":" + client.getPort());
+                    new Thread(() -> handleClient(client)).start();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void handleClient(Socket client) {
+
+        try {
+
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(client.getInputStream())
+            );
+            String line;
+            while ((line = reader.readLine()) != null) {
+//                System.out.println("收到消息: " + line);
+                onClientMessage(line);
+            }
+        } catch (Exception e) {
+            System.out.println("客户端断开");
+        }
+    }
+    private void onClientMessage(String message) {
+        if(message.equals("reconnect_gui")) {
+            Preloader.connect("127.0.0.1", 9999);
+            registerMain();
+        }
+    }
+
     public void onMessage(String message) {
 //        System.out.println(message);
         if(!isJson(message)) return;
@@ -148,7 +204,7 @@ public class ExternalGui {
         }
     }
 
-    public static String toImGuiFormat(String pattern) {
+    public String toImGuiFormat(String pattern) {
         if (pattern == null || pattern.isEmpty()) return "%.0f";
         int dotIndex = pattern.indexOf('.');
         if (dotIndex == -1) return "%.0f";

@@ -42,27 +42,8 @@ public class Main {
         }
 //        MinecraftTransformer.isLocalServer(Minecraft.);
         Preloader.send("init ok");
-        startServer(8888);
         externalGui = new ExternalGui();
         externalGui.registerMain();
-    }
-    private static ServerSocket serverSocket;
-    public static void startServer(int port) {
-        new Thread(() -> {
-            try {
-                serverSocket = new ServerSocket(port);
-                System.out.println("Java已启动，监听端口: " + port);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-    public static void stop() {
-        try {
-            if (serverSocket != null) serverSocket.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 

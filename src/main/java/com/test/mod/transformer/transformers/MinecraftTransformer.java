@@ -11,6 +11,9 @@ public class MinecraftTransformer implements ITransformer {
 
     @Reflect("isLocalServer")
     public native static void setLocalServer(Minecraft instance, boolean value);
+
+
+
 //    @Reflect(value = "abortResourcePackRecovery", desc = "()V")
 //    public native static void abortResourcePackRecovery(Minecraft instance);
 
