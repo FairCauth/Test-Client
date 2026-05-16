@@ -3,11 +3,14 @@ package com.fair.preload;
 import sun.misc.Unsafe;
 
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.function.Consumer;
 //此类只用于加载自身jar class
 //注入Core.dll时会先加载此类 此类保存在Core里 在这里改完注入完不生效。
@@ -23,6 +26,13 @@ public class Preloader extends Thread {
         messageHandler = handler;
     }
     public static void startListening() {
+        if (listenerThread != null && listenerThread.isAlive()) {
+            return;
+        }
+
+        if (in == null) {
+            return;
+        }
         listenerThread = new Thread(() -> {
             try {
                 String line;
@@ -32,7 +42,7 @@ public class Preloader extends Thread {
                     }
                 }
             } catch (Exception e) {
-                System.out.println("连接断开: " + e.getMessage());
+
             } finally {
                 try { if (socket != null) socket.close(); } catch (Exception ignored) {}
                 socket = null;
@@ -43,22 +53,22 @@ public class Preloader extends Thread {
         listenerThread.setDaemon(true);  // 主线程退出时自动结束
         listenerThread.start();
     }
-    public static void connect(String host, int port) {
+    public static boolean connect(String host, int port) {
         if (socket != null && socket.isConnected() && !socket.isClosed()) {
-            System.out.println("已经连接");
-            return;
+            return true;
         }
         try {
             socket = new Socket(host, port);
             out = new PrintWriter(socket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            startListening();
-            System.out.println("已连接到服务器");
+            //startListening();
+            return true;
         }catch (Exception e) {
             e.printStackTrace();
         }
-
+        return false;
     }
+
     public static String sendAndWait(String message) {
         if (out != null) {
             try {
@@ -76,11 +86,19 @@ public class Preloader extends Thread {
             out.println(message);
         }
     }
+    public static void cleanup() {
+        try {
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (Exception ignored) {}
 
-    public static void disconnect() throws Exception {
-        if (socket != null) socket.close();
+        socket = null;
+        out = null;
+        in = null;
+        listenerThread = null;
+
     }
-
     public static String MAIN_PATH = "C:\\Test\\lib";
 
     public static String CORE_DLL = "Core.dll";
@@ -96,13 +114,32 @@ public class Preloader extends Thread {
     public static byte[][] getByteArray(int size) {
         return new byte[size][];
     }
+    public static boolean reconnect(String host, int port) {
+//        try {
+//            cleanup();
+//        } catch (Exception ignored) {}
 
+        if (connect(host, port)) {
+            startListening();
+            return true;
+        }
+
+        return false;
+    }
     @Override
     public void run() {
-        connect("127.0.0.1", 9999);
-        MAIN_PATH = sendAndWait("run!");
-        send("path " + MAIN_PATH);
+        boolean connected = connect("127.0.0.1", 9999);
+        if(connected) {
+            MAIN_PATH = sendAndWait("run!");
+            CORE_DLL = sendAndWait("ask_dll_name");
+            startListening();
+            send("path " + MAIN_PATH + " DLL " + CORE_DLL);
+
+        }
+
+
         System.load(MAIN_PATH + "\\" + CORE_DLL);
+        log("DIRS " + MAIN_PATH + " " + CORE_DLL);
         try {
             Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
             Field field = unsafeClass.getDeclaredField("theUnsafe");

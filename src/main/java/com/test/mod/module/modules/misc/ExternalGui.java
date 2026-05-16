@@ -15,7 +15,7 @@ import com.test.mod.module.annotation.ModuleInfo;
 public class ExternalGui extends AbstractModule {
     @Override
     protected void onEnable() {
-        Preloader.connect("127.0.0.1", 9999);
+        Preloader.reconnect("127.0.0.1", 9999);
         Main.INSTANCE.externalGui.registerMain();
     }
 }

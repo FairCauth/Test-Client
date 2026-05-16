@@ -65,7 +65,7 @@ public class ExternalGui {
     }
     private void onClientMessage(String message) {
         if(message.equals("reconnect_gui")) {
-            Preloader.connect("127.0.0.1", 9999);
+            Preloader.reconnect("127.0.0.1", 9999);
             registerMain();
         }
     }

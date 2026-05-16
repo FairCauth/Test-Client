@@ -30,61 +30,80 @@ public class Client {
 
     // 测试
     public static void main(String[] args) throws Exception {
-        Preloader.connect("127.0.0.1", 9999);
-        //String res = Preloader.sendAndWait("run!");
-        //System.out.println(res);
-        //Preloader.disconnect();
-        new ExternalGui();
-        ModuleManager moduleManager = new ModuleManager();
-        for (AbstractModule module : moduleManager.getModuleList()) {
-
-            JsonObject jsonModule = new JsonObject();
-            jsonModule.addProperty("type", "register_module");
-            jsonModule.addProperty("module", module.getName());
-            jsonModule.addProperty("key", module.getKey());
-            jsonModule.addProperty("enable", module.isEnable());
-            jsonModule.addProperty("category", module.getCategory().name());
-            String text = gson.toJson(jsonModule);
-            System.out.println(text);
-            Preloader.send(text);
-            //setting
-            for (Setting<?> setting : SettingManager.getSettings(module)) {
-                JsonObject jsonSetting = new JsonObject();
-                jsonSetting.addProperty("type", "register_setting");
-                jsonSetting.addProperty("module", module.getName());
-                jsonSetting.addProperty("setting", setting.getName());
-                jsonSetting.addProperty("level", setting.getLevel());
-                jsonSetting.addProperty("display", setting.isDisplay());
-                if(setting instanceof BooleanSetting) {
-                    jsonSetting.addProperty("setting_type", "boolean");
-                    jsonSetting.addProperty("value", ((BooleanSetting) setting).getValue());
-
-                } else if (setting instanceof NumberSetting) {
-                    jsonSetting.addProperty("setting_type", "number");
-                    jsonSetting.addProperty("min", ((NumberSetting) setting).getMin());
-                    jsonSetting.addProperty("max", ((NumberSetting) setting).getMax());
-
-                    String str = "%." + ((NumberSetting) setting).getPrecisePattern().chars().filter(t -> t == '0').count() + "f";
-
-                    jsonSetting.addProperty("precise",
-                            ((NumberSetting) setting).getPrecisePattern().equals("#") ? "%.0f" : str);
-                    jsonSetting.addProperty("value", ((NumberSetting) setting).getValue().floatValue());
-
-                } else if (setting instanceof ModeSetting) {
-                    jsonSetting.addProperty("setting_type", "mode");
-                    jsonSetting.addProperty("value", ((ModeSetting) setting).getValue());
-
-                    JsonArray array = gson.toJsonTree(((ModeSetting) setting).getModes()).getAsJsonArray();
-                    jsonSetting.add("modes", array);
-                }
-                text = gson.toJson(jsonSetting);
-                System.out.println(text);
-                Preloader.send(text);
-
-            }
+        boolean connected = Preloader.connect("127.0.0.1", 9999);
+        if(connected) {
+            Preloader.MAIN_PATH = Preloader.sendAndWait("run!");
+            Preloader.CORE_DLL = Preloader.sendAndWait("ask_dll_name");
+            System.out.println("DIRS " + Preloader.MAIN_PATH + " " + Preloader.CORE_DLL);
+            Preloader.startListening();
+            Preloader.send("start transformer 10");
         }
+
+
+//        try {
+//            Thread.sleep(3000);
+//            System.out.println("1111");
+//            Preloader.reconnect("127.0.0.1", 9999);
+//            Preloader.send("start transformer 10");
+//            Preloader.send("afsfa1111111111111111");
+//        }catch (Exception e) {
+//
+//        }
         while (true){
 
         }
+        //String res = Preloader.sendAndWait("run!");
+        //System.out.println(res);
+        //Preloader.disconnect();
+//        new ExternalGui();
+//        ModuleManager moduleManager = new ModuleManager();
+//        for (AbstractModule module : moduleManager.getModuleList()) {
+//
+//            JsonObject jsonModule = new JsonObject();
+//            jsonModule.addProperty("type", "register_module");
+//            jsonModule.addProperty("module", module.getName());
+//            jsonModule.addProperty("key", module.getKey());
+//            jsonModule.addProperty("enable", module.isEnable());
+//            jsonModule.addProperty("category", module.getCategory().name());
+//            String text = gson.toJson(jsonModule);
+//            System.out.println(text);
+//            Preloader.send(text);
+//            //setting
+//            for (Setting<?> setting : SettingManager.getSettings(module)) {
+//                JsonObject jsonSetting = new JsonObject();
+//                jsonSetting.addProperty("type", "register_setting");
+//                jsonSetting.addProperty("module", module.getName());
+//                jsonSetting.addProperty("setting", setting.getName());
+//                jsonSetting.addProperty("level", setting.getLevel());
+//                jsonSetting.addProperty("display", setting.isDisplay());
+//                if(setting instanceof BooleanSetting) {
+//                    jsonSetting.addProperty("setting_type", "boolean");
+//                    jsonSetting.addProperty("value", ((BooleanSetting) setting).getValue());
+//
+//                } else if (setting instanceof NumberSetting) {
+//                    jsonSetting.addProperty("setting_type", "number");
+//                    jsonSetting.addProperty("min", ((NumberSetting) setting).getMin());
+//                    jsonSetting.addProperty("max", ((NumberSetting) setting).getMax());
+//
+//                    String str = "%." + ((NumberSetting) setting).getPrecisePattern().chars().filter(t -> t == '0').count() + "f";
+//
+//                    jsonSetting.addProperty("precise",
+//                            ((NumberSetting) setting).getPrecisePattern().equals("#") ? "%.0f" : str);
+//                    jsonSetting.addProperty("value", ((NumberSetting) setting).getValue().floatValue());
+//
+//                } else if (setting instanceof ModeSetting) {
+//                    jsonSetting.addProperty("setting_type", "mode");
+//                    jsonSetting.addProperty("value", ((ModeSetting) setting).getValue());
+//
+//                    JsonArray array = gson.toJsonTree(((ModeSetting) setting).getModes()).getAsJsonArray();
+//                    jsonSetting.add("modes", array);
+//                }
+//                text = gson.toJson(jsonSetting);
+//                System.out.println(text);
+//                Preloader.send(text);
+//
+//            }
+//        }
+
     }
 }

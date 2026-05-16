@@ -29,7 +29,7 @@ public class Main {
     public static Gson gson = new Gson();
     public void run() {
         prepare();
-        Preloader.connect("127.0.0.1", 9999);
+        Preloader.reconnect("127.0.0.1", 9999);
         moduleManager = new ModuleManager();
         skiaManager = new SkiaManager();
         transformerLoader = new TransformerLoader();
