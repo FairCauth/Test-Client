@@ -15,7 +15,7 @@ public class EventRenderLiving extends EventCancellable {
     private final PoseStack poseStack;
     private final MultiBufferSource multiBufferSource;
     private final int packedLight;
-    public boolean flag,flag1,flag2;
+//    public boolean flag,flag1,flag2;
     public EventRenderLiving(EventType eventType, LivingEntity entity, LivingEntityRenderer renderer, float partialTick, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight) {
         this.entity = entity;
         this.eventType = eventType;

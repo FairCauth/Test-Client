@@ -25,21 +25,14 @@ public class TransformerProcessManager {
         add(new ASMProcess());
         add(new ReflectProcess());
     }
-    public boolean matchField(Field field,
-                           ClassNode classNode, ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas) {
-
-        return matchMember(field, classNode,  mixinClassNode,iTransformer,targetClas);
+    public boolean matchField(Field field, ProcessInfo processInfo) {
+        return matchMember(field, processInfo);
     }
 
-    public boolean matchMethod(Method method,
-                            ClassNode classNode, ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas) {
-
-        return matchMember(method, classNode, mixinClassNode,iTransformer,targetClas);
+    public boolean matchMethod(Method method, ProcessInfo processInfo) {
+        return matchMember(method, processInfo);
     }
-    private <V> boolean matchMember(
-            V member,
-            ClassNode targetClassNode, ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas
-    ) {
+    private <V> boolean matchMember(V member, ProcessInfo processInfo) {
         for (TransformerProcess<?, ?> process : transformerProcesses) {
             if (!process.getTargetType().isAssignableFrom(member.getClass())) {
                 continue;
@@ -56,7 +49,7 @@ public class TransformerProcessManager {
 
 
 
-            invokeProcess(process, targetClassNode, mixinClassNode, member, annotation,iTransformer,targetClas);
+            invokeProcess(process, member, annotation, processInfo);
             return process.transformMixinClass();
         }
         return false;
@@ -64,10 +57,9 @@ public class TransformerProcessManager {
     @SuppressWarnings("unchecked")
     private <T extends Annotation, V> void invokeProcess(
             TransformerProcess<?, ?> process,
-            ClassNode classNode,
-            ClassNode mixinClassNode,
             Object member,
-            Annotation annotation, Class<? extends ITransformer> iTransformer,Class<?> targetClas
+            Annotation annotation,
+            ProcessInfo processInfo
     ) {
 
         TransformerProcess<T, V> typedProcess =
@@ -77,10 +69,7 @@ public class TransformerProcessManager {
         V typedMember = (V) member;
 
         typedProcess.process(
-                classNode,
-                mixinClassNode,
-                targetClas,
-                iTransformer,
+                processInfo,
                 typedMember,
                 typedAnnotation
         );

@@ -3,22 +3,15 @@ package com.test.mod.utils.render;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.test.mod.utils.IMinecraft;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.OptionalDouble;
 
 public class ESPUtils implements IMinecraft {
     public record Bone(Vec3 start, Vec3 end) {
@@ -33,38 +26,49 @@ public class ESPUtils implements IMinecraft {
     public static final RenderStateShard.ShaderStateShard POSITION_COLOR_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getPositionColorShader);
 
     protected static final RenderStateShard.ShaderStateShard RENDERTYPE_LINES_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getRendertypeLinesShader);
-    public static RenderType createLineRenderType() {
-        try {
-            Class<?> lineClass = Class.forName(
-                    "net.minecraft.client.renderer.RenderStateShard$LineStateShard"
-            );
-            Constructor<?> ctor = lineClass.getDeclaredConstructor(OptionalDouble.class);
-            ctor.setAccessible(true);
-            Object lineInstance = ctor.newInstance(OptionalDouble.of(3.0));
-
-            RenderType.CompositeState.CompositeStateBuilder builder = RenderType.CompositeState.builder()
-                    .setShaderState(RENDERTYPE_LINES_SHADER)
-                    .setTransparencyState(NO_TRANSPARENCY)
-                    .setCullState(NO_CULL)
-                    .setDepthTestState(NO_DEPTH_TEST);
-
-            Method setLineState = builder.getClass()
-                    .getDeclaredMethod("setLineState", lineClass);
-            setLineState.setAccessible(true);
-            setLineState.invoke(builder, lineInstance);
-
-            return RenderType.create(
-                    "no_depth_lines",
-                    DefaultVertexFormat.POSITION_COLOR_NORMAL,
-                    VertexFormat.Mode.LINES,
-                    256, false, false,
-                    builder.createCompositeState(false)
-            );
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-    public static RenderType LINES = createLineRenderType();
+//    public static RenderType createLineRenderType() {
+//        try {
+//            Class<?> lineClass = Class.forName(
+//                    "net.minecraft.client.renderer.RenderStateShard$LineStateShard"
+//            );
+//            Constructor<?> ctor = lineClass.getDeclaredConstructor(OptionalDouble.class);
+//            ctor.setAccessible(true);
+//            Object lineInstance = ctor.newInstance(OptionalDouble.of(3.0));
+//
+//            RenderType.CompositeState.CompositeStateBuilder builder = RenderType.CompositeState.builder()
+//                    .setShaderState(RENDERTYPE_LINES_SHADER)
+//                    .setTransparencyState(NO_TRANSPARENCY)
+//                    .setCullState(NO_CULL)
+//                    .setDepthTestState(NO_DEPTH_TEST);
+//            //m_110673_
+//            String methodName = "setLineState";
+//            if(Main.mcEnvironment == Main.McEnvironment.FORGE_OBF) {
+//                Mapping.get(RenderType.CompositeState.CompositeStateBuilder.class, "setLineState", "(Lnet/minecraft/client/renderer/RenderStateShard$LineStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder;");
+//            } else if (Main.mcEnvironment == Main.McEnvironment.VANILLA_OBF) {
+//                String owner = Type.getInternalName(RenderType.CompositeState.CompositeStateBuilder.class);
+//                String desc = "(Lnet/minecraft/client/renderer/RenderStateShard$LineStateShard;)Lnet/minecraft/client/renderer/RenderType$CompositeState$CompositeStateBuilder;";//mouseReleased mouseScrolled DDD)Z
+//                methodName = Main.mapping.mapMethodName(owner, methodName, desc);
+//            }
+//
+//
+//            Method setLineState = builder.getClass()
+//                    .getDeclaredMethod(methodName, lineClass);
+//            setLineState.setAccessible(true);
+//            setLineState.invoke(builder, lineInstance);
+//
+//            return RenderType.create(
+//                    "no_depth_lines",
+//                    DefaultVertexFormat.POSITION_COLOR_NORMAL,
+//                    VertexFormat.Mode.LINES,
+//                    256, false, false,
+//                    builder.createCompositeState(false)
+//            );
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//    }
+//    public static RenderType LINES = createLineRenderType();
     public static RenderType DEBUG_LINES = RenderType.create(
             "no_depth_lines",
             DefaultVertexFormat.POSITION_COLOR,
@@ -80,6 +84,7 @@ public class ESPUtils implements IMinecraft {
 
                     .createCompositeState(false)
     );
+
     public static Vec3 applyMatrixTransform(Matrix4f matrix, Vec3 vec, Vector4f tmp) {
         tmp.set((float) vec.x, (float) vec.y, (float) vec.z, 1.0f);
         matrix.transform(tmp);

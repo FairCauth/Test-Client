@@ -7,6 +7,207 @@ plugins {
 
 }
 
+tasks.register('devJar', Jar) {
+    group = 'release'
+    from sourceSets.main.output
+    description = 'Build a non-reobfuscated development jar'
+    archiveClassifier = 'dev'
+
+    exclude 'com/example/examplemod/**'
+//
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//
+//    from {
+//        configurations.runtimeClasspath
+//                .filter { it.name.contains('asm') }
+//                .collect { it.isDirectory() ? it : zipTree(it) }
+//    }
+
+    manifest {
+
+        attributes([
+                "Specification-Title"     : project.name,
+                "Specification-Version"   : "1",
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.version
+        ])
+    }
+}
+
+tasks.register('buildVanillaReobf', Exec) {
+    group = 'release'
+    description = 'Remap dev jar to vanilla obfuscated jar using SpecialSource'
+
+    dependsOn tasks.named('devJar')
+
+    def specialSourceJar = file("${rootDir}/tools/SpecialSource-1.11.6-shaded.jar")
+    def mappingFile = file("${rootDir}/tools/client.txt")
+
+    def devJarTask = tasks.named('devJar', Jar)
+
+    commandLine 'java',
+            '-jar', specialSourceJar.absolutePath,
+            '-i', devJarTask.get().archiveFile.get().asFile.absolutePath,
+            '-o', file("${buildDir}/libs/${base.archivesName.get()}-${project.version}-vanilla-obf.jar").absolutePath,
+            '-m', mappingFile.absolutePath,
+            '-r',
+            '--kill-lvt'
+}
+tasks.register('buildFabricReobf', Exec) {
+    group = 'release'
+    description = 'Remap vanilla obfuscated jar to Fabric intermediary jar using TinyRemapper'
+
+    dependsOn tasks.named('buildVanillaReobf')
+    def tinyRemapperJar = file("${rootDir}/tools/tiny-remapper-0.13.1-fat.jar")
+    def fabricMappingFile = file("${rootDir}/tools/mappings.tiny")
+    def minecraftClientJar = file("${rootDir}/tools/1.20.1-vanilla.jar")
+    def inputJar = file("${buildDir}/libs/${base.archivesName.get()}-${project.version}-vanilla-obf.jar")
+    def outputJar = file("${buildDir}/libs/${base.archivesName.get()}-${project.version}-fabric-intermediary.jar")
+
+    inputs.file inputJar
+    inputs.file fabricMappingFile
+    inputs.file minecraftClientJar
+    outputs.file outputJar
+
+    doFirst {
+        outputJar.parentFile.mkdirs()
+
+        commandLine 'java',
+                '-jar', tinyRemapperJar.absolutePath,
+                inputJar.absolutePath,
+                outputJar.absolutePath,
+                fabricMappingFile.absolutePath,
+                'official',
+                'intermediary',
+                minecraftClientJar.absolutePath
+    }
+}
+
+
+tasks.register('buildCompileJars') {
+    group = 'release'
+    description = 'Build dev, forge, vanilla and fabric jars into compile directory'
+
+    dependsOn tasks.named('buildFabricReobf')
+
+    if (tasks.findByName('reobfJar') != null) {
+        dependsOn tasks.named('reobfJar')
+    } else {
+        dependsOn tasks.named('jar')
+    }
+
+    doLast {
+        def compileDir = file("${rootDir}/compile")
+
+//        delete compileDir
+//        compileDir.mkdirs()
+        compileDir.mkdirs()
+
+        def archiveName = base.archivesName.get()
+        def ver = project.version
+
+        def devOut = file("${compileDir}/${archiveName}-${ver}-dev.jar")
+        def forgeOut = file("${compileDir}/${archiveName}-${ver}-forge.jar")
+        def vanillaOut = file("${compileDir}/${archiveName}-${ver}-vanilla.jar")
+        def fabricOut = file("${compileDir}/${archiveName}-${ver}-fabric.jar")
+        delete devOut
+        delete forgeOut
+        delete vanillaOut
+        delete fabricOut
+
+
+        def devJarTask = tasks.named('devJar', Jar).get()
+        def normalJarTask = tasks.named('jar', Jar).get()
+
+        def devJarFile = devJarTask.archiveFile.get().asFile
+
+        def forgeJarFile = normalJarTask.archiveFile.get().asFile
+
+        def vanillaJarFile = file("${buildDir}/libs/${archiveName}-${ver}-vanilla-obf.jar")
+        def fabricJarFile = file("${buildDir}/libs/${archiveName}-${ver}-fabric-intermediary.jar")
+
+
+        copy {
+            from devJarFile
+            into compileDir
+            rename { "${archiveName}-${ver}-dev.jar" }
+        }
+
+        copy {
+            from forgeJarFile
+            into compileDir
+            rename { "${archiveName}-${ver}-forge.jar" }
+        }
+
+        copy {
+            from vanillaJarFile
+            into compileDir
+            rename { "${archiveName}-${ver}-vanilla.jar" }
+        }
+
+        copy {
+            from fabricJarFile
+            into compileDir
+            rename { "${archiveName}-${ver}-fabric.jar" }
+        }
+
+
+        //=============
+        def packerJar = file("${rootDir}/tools/J2DPacker.jar")
+
+        def devPackOut = file("${compileDir}/noobf.pack")
+        def forgePackOut = file("${compileDir}/forge.pack")
+        def vanillaPackOut = file("${compileDir}/vanilla.pack")
+        def fabricPackOut = file("${compileDir}/fabric.pack")
+
+        delete devPackOut
+        delete forgePackOut
+        delete vanillaPackOut
+        delete fabricPackOut
+
+        def packJar = { File inputJar, File outputPack ->
+            exec {
+                executable = "java"
+                args = [
+                        "-jar",
+                        packerJar.absolutePath,
+                        inputJar.absolutePath,
+                        outputPack.absolutePath
+                ]
+            }
+        }
+
+        packJar(devOut, devPackOut)
+        packJar(forgeOut, forgePackOut)
+        packJar(vanillaOut, vanillaPackOut)
+        packJar(fabricOut, fabricPackOut)
+
+        println "==================================="
+        println "Generated compile jars:"
+        println " - ${file("${compileDir}/${archiveName}-${ver}-dev.jar")}"
+        println " - ${file("${compileDir}/${archiveName}-${ver}-forge.jar")}"
+        println " - ${file("${compileDir}/${archiveName}-${ver}-vanilla.jar")}"
+        println " - ${file("${compileDir}/${archiveName}-${ver}-fabric.jar")}"
+        println "==================================="
+    }
+}
+
+
+tasks.register('vanillaAndPack', Exec) {
+    group = 'release'
+    description = '打包为classes.h'
+
+    dependsOn tasks.named('buildVanillaReobf')
+    def packerJar = file("${rootDir}/tools/Packer.jar")
+
+    doFirst {
+        def vanillaJar = file("${buildDir}/libs/${base.archivesName.get()}-${project.version}-vanilla-obf.jar")
+
+        commandLine 'java',
+                '-jar', packerJar.absolutePath,
+                vanillaJar.absolutePath
+    }
+}
 version = mod_version
 group = mod_group_id
 
@@ -181,6 +382,15 @@ tasks.named('processResources', ProcessResources).configure {
 
 // Example for how to get properties into the manifest for reading at runtime.
 tasks.named('jar', Jar).configure {
+
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//
+//    from {
+//        configurations.runtimeClasspath
+//                .filter { it.name.contains('asm') }
+//                .collect { it.isDirectory() ? it : zipTree(it) }
+//    }
+
     manifest {
         attributes([
                 'Specification-Title'     : mod_id,

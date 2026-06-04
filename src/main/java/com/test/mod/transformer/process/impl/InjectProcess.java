@@ -1,19 +1,18 @@
 package com.test.mod.transformer.process.impl;
 
+import com.test.mod.asm.Opcodes;
+import com.test.mod.asm.Type;
 import com.test.mod.asm.tree.*;
-import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.TransformerException;
 import com.test.mod.transformer.annotation.At;
 import com.test.mod.transformer.annotation.Inject;
 import com.test.mod.transformer.annotation.Local;
 import com.test.mod.transformer.callback.CallbackInfo;
 import com.test.mod.transformer.callback.CallbackInfoReturnable;
-import com.test.mod.transformer.mapping.Mapping;
+import com.test.mod.transformer.process.ProcessInfo;
 import com.test.mod.transformer.process.TransformerProcess;
 import com.test.mod.transformer.utils.PointFinder;
 import com.test.mod.transformer.utils.Tools;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -25,16 +24,13 @@ public class InjectProcess extends TransformerProcess<Inject, Method> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode,
-                        ClassNode mixinClassNode,
-                        Class<?> targetClass,
-                        Class<? extends ITransformer> iTransformer,
+    public void process(ProcessInfo processInfo,
                         Method method,
                         Inject inject
     ) {
         String desc = inject.desc();
-        MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
-        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, inject.methodName(), desc, true);
+        MethodNode mixinMethodNode = Tools.getMethod(processInfo.mixinClassNode(), Tools.toDesc(method), method.getName());
+        MethodNode targetMethodNode = getTargetMethodNode(processInfo, inject.methodName(), desc, true);
 
         if (targetMethodNode != null && mixinMethodNode != null) {
 

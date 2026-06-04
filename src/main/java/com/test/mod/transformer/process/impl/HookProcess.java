@@ -2,11 +2,10 @@ package com.test.mod.transformer.process.impl;
 
 import com.test.mod.asm.Type;
 import com.test.mod.asm.tree.*;
-import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.TransformerException;
 import com.test.mod.transformer.annotation.At;
 import com.test.mod.transformer.annotation.Hook;
-import com.test.mod.transformer.mapping.Mapping;
+import com.test.mod.transformer.process.ProcessInfo;
 import com.test.mod.transformer.process.TransformerProcess;
 import com.test.mod.transformer.utils.PointFinder;
 import com.test.mod.transformer.utils.Tools;
@@ -21,17 +20,14 @@ public class HookProcess extends TransformerProcess<Hook, Method> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode,
-                        ClassNode mixinClassNode,
-                        Class<?> targetClass,
-                        Class<? extends ITransformer> iTransformer,
+    public void process(ProcessInfo processInfo,
                         Method method,
                         Hook annotation
     ) {
         String desc = annotation.desc();
 
-        MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
-        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, annotation.methodName(), desc, true);
+        MethodNode mixinMethodNode = Tools.getMethod(processInfo.mixinClassNode(), Tools.toDesc(method), method.getName());
+        MethodNode targetMethodNode = getTargetMethodNode(processInfo, annotation.methodName(), desc, true);
 
         if (targetMethodNode == null || mixinMethodNode == null)
             throw new TransformerException("targetMethodNode or mixinMethodNode NULL!");

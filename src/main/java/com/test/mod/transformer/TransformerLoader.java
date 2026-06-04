@@ -3,11 +3,13 @@ package com.test.mod.transformer;
 
 import com.fair.preload.Preloader;
 import com.test.mod.Main;
+import com.test.mod.asm.Type;
 import com.test.mod.asm.tree.ClassNode;
 import com.test.mod.natives.CoreNative;
 import com.test.mod.transformer.annotation.ClassNameTransformer;
 import com.test.mod.transformer.annotation.ClassTransformer;
 import com.test.mod.transformer.annotation.TransformerMeta;
+import com.test.mod.transformer.process.ProcessInfo;
 import com.test.mod.transformer.process.TransformerProcessManager;
 import com.test.mod.transformer.transformers.*;
 import com.test.mod.transformer.transformers.model.CreeperModelTransformer;
@@ -24,8 +26,9 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class TransformerLoader {
+    public record TransformerClass(String originalClass, String transformClass) { }
     //class name
-    private final Map<String, Class<? extends ITransformer>> transformerMap = new HashMap<>();
+    private final Map<TransformerClass, Class<? extends ITransformer>> transformerMap = new HashMap<>();
     private final TransformerProcessManager transformerProcessManager = new TransformerProcessManager();
     private final Map<Class<?>, byte[]> originalBytecodeMap = new HashMap<>();
 
@@ -51,12 +54,14 @@ public class TransformerLoader {
 
     private void onTransform() throws ClassNotFoundException {
 
-        Set<String> keySet = transformerMap.keySet();
+        Set<TransformerClass> keySet = transformerMap.keySet();
         int success = 0, error = 0;
         Preloader.send("start transformer " + keySet.size());
-        for (String className : keySet) {
-            Class<?> targetClass = Class.forName(className);
-            Class<? extends ITransformer> transformer = transformerMap.get(className);
+        for (TransformerClass transformerClass : keySet) {
+            String originalClass = transformerClass.originalClass;
+            String transformClass = transformerClass.transformClass;
+            Class<?> targetClass = Class.forName(transformClass);
+            Class<? extends ITransformer> transformer = transformerMap.get(transformerClass);
 
             ClassNode classNode = null;
             ClassNode mixinClassNode = null;
@@ -68,7 +73,7 @@ public class TransformerLoader {
                     byte[] classByte = CoreNative.getClassBytes(targetClass);
                     originalBytecodeMap.put(targetClass, classByte);
                     if (classByte == null)
-                        throw new TransformerException(className + " transformer getClassBytes error");
+                        throw new TransformerException(originalClass + " transformer getClassBytes error");
                     //获取mixin class字节
                     byte[] mixinClassByte = CoreNative.getClassBytes(transformer);
                     if (mixinClassByte == null)
@@ -81,9 +86,17 @@ public class TransformerLoader {
                     Method[] methods = transformer.getDeclaredMethods();
                     Field[] fields = transformer.getDeclaredFields();
 
+                    ProcessInfo processInfo = new ProcessInfo(
+                            classNode,
+                            mixinClassNode,
+                            targetClass,
+                            originalClass,
+                            transformer
+                    );
 
-                    handleTransformerFields(fields, classNode, mixinClassNode,transformer,targetClass);
-                    boolean needTransformMixin = handleTransformerMethods(methods, classNode, mixinClassNode, transformer,targetClass);
+                    handleTransformerFields(fields, processInfo);
+                    boolean needTransformMixin =
+                            handleTransformerMethods(methods, processInfo);
                     if(needTransformMixin) transformMixinClass = true;
                     break;
                 } catch (Exception e) {
@@ -101,11 +114,12 @@ public class TransformerLoader {
 
             byte[] newMixinClassByte = Tools.rewriteClass(mixinClassNode);
 
-            if(targetClass.equals(LevelRenderer.class) ) {
-                try (FileOutputStream fos = new FileOutputStream(targetClass.getName() + ".class")) {
-                    fos.write(newClassByte);
-                } catch (IOException ignored) {}
-            }
+//            TEST CODE
+//            if(targetClass.equals(LevelRenderer.class) ) {
+//                try (FileOutputStream fos = new FileOutputStream(targetClass.getName() + ".class")) {
+//                    fos.write(newClassByte);
+//                } catch (IOException ignored) {}
+//            }
 //            if(transformer.equals(MinecraftTransformer.class) ) {
 //                try (FileOutputStream fos = new FileOutputStream(transformer.getName() + ".class")) {
 //                    fos.write(newMixinClassByte);
@@ -115,16 +129,16 @@ public class TransformerLoader {
             int errorCode = CoreNative.redefineClasses(targetClass, newClassByte);
             if (errorCode != 0) {
                 error++;
-                Preloader.send(className +" transformer RedefineClass error "+ errorCode);
-                throw new TransformerException(className + " transformer RedefineClass error " + errorCode);
+                Preloader.send(originalClass +" transformer RedefineClass error "+ errorCode);
+                throw new TransformerException(originalClass + " transformer RedefineClass error " + errorCode);
             }
 
             if (transformMixinClass) {
                 errorCode = CoreNative.redefineClasses(transformer, newMixinClassByte);
                 if (errorCode != 0) {
                     error++;
-                    Preloader.send(className + " [MIXINCLASS]transformer RedefineClass error " + errorCode);
-                    throw new TransformerException(className + " [MIXINCLASS]transformer RedefineClass error " + errorCode);
+                    Preloader.send(originalClass + " [MIXINCLASS]transformer RedefineClass error " + errorCode);
+                    throw new TransformerException(originalClass + " [MIXINCLASS]transformer RedefineClass error " + errorCode);
                 }
                 Preloader.send(transformer.getName() + " -> [MIXINCLASS]Transform OK " + cnt);
                 System.out.println(transformer.getName() + " -> [MIXINCLASS]Transform OK " + cnt);
@@ -135,15 +149,15 @@ public class TransformerLoader {
                 Thread.sleep(500);
             }catch (Exception ignored) {
             }
-
-            Preloader.send(targetClass.getName() + " -> Transform OK " + cnt);
-            System.out.println(targetClass.getName() + " -> Transform OK " + cnt);
+            String classOutputName = targetClass.getName() + (!originalClass.equals(transformClass) ? ("[" + originalClass + "]") : "");
+            Preloader.send(classOutputName + " -> Transform OK " + cnt);
+            System.out.println(classOutputName + " -> Transform OK " + cnt);
         }
     }
-    private void handleTransformerFields(Field[] fields, ClassNode classNode ,ClassNode mixinClassNode, Class<? extends ITransformer> iTransformer,Class<?> targetClas) {
+    private void handleTransformerFields(Field[] fields, ProcessInfo processInfo) {
         for (Field field : fields) {
             field.setAccessible(true);
-            transformerProcessManager.matchField(field, classNode,mixinClassNode,iTransformer,targetClas);
+            transformerProcessManager.matchField(field, processInfo);
         }
     }
     private int getPriority(Method method) {
@@ -161,9 +175,7 @@ public class TransformerLoader {
     //优先级匹配
     private boolean handleTransformerMethods(
             Method[] methods,
-            ClassNode classNode,
-            ClassNode mixinClassNode,
-            Class<? extends ITransformer> iTransformer,Class<?> targetClas
+            ProcessInfo processInfo
     ) {
 
         List<Method> sorted = new ArrayList<>(Arrays.asList(methods));
@@ -174,10 +186,9 @@ public class TransformerLoader {
         boolean transformMixinClass = false;
         for (Method method : sorted) {
             method.setAccessible(true);
-            boolean t = transformerProcessManager.matchMethod(
-                    method, classNode, mixinClassNode, iTransformer,targetClas
-            );
-            if(t) transformMixinClass = true;
+            boolean t = transformerProcessManager.matchMethod(method, processInfo);
+            if (t)
+                transformMixinClass = true;
         }
         return transformMixinClass;
     }
@@ -207,10 +218,23 @@ public class TransformerLoader {
             ClassTransformer clazzAnt = iTransformer.getAnnotation(ClassTransformer.class);
             ClassNameTransformer clazzNameAnt = iTransformer.getAnnotation(ClassNameTransformer.class);
             if(clazzAnt != null)
-                transformerMap.put(clazzAnt.value().getName(), iTransformer);
+                transformerMap.put(new TransformerClass(clazzAnt.value().getName(), clazzAnt.value().getName()), iTransformer);
 
             if(clazzNameAnt != null)
-                transformerMap.put(clazzNameAnt.value(), iTransformer);
+            {
+                String className = clazzNameAnt.value();
+                if (Main.mcEnvironment == Main.McEnvironment.VANILLA_OBF) {
+                    String owner = className.replace(".", "/");
+                    className = Main.mapping.map(owner);
+                    System.out.println("map class vanilla " + clazzNameAnt.value() + " -> " + className);
+                } else if (Main.mcEnvironment == Main.McEnvironment.FABRIC_OBF) {
+                    String owner = className.replace(".", "/");
+                    className = Main.fabric_mapping.map(owner).replace("/", ".");
+                    System.out.println("map class fabric " + clazzNameAnt.value() + " -> " + className);
+                }
+
+                transformerMap.put(new TransformerClass(clazzNameAnt.value(), className), iTransformer);
+            }
 
         }
 

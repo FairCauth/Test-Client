@@ -10,7 +10,6 @@ import com.test.mod.ui.system.utils.CanvasStack;
 import com.test.mod.utils.IMinecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import org.openjdk.nashorn.internal.objects.annotations.Getter;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -23,6 +22,9 @@ public class ClickGuiScreen extends Screen implements IMinecraft {
     public ClickGuiScreen(Component p_96550_) {
         super(p_96550_);
         EventManager.register(this);
+
+        //初始化鼠标滚轮事件
+        MousePoller.installScrollCallback();
 
         float categoryX = 10, categoryWidth = 120;
         for (Category category : Category.getCategories()) {
@@ -46,35 +48,39 @@ public class ClickGuiScreen extends Screen implements IMinecraft {
             b--;
         }
     }
-    @Override
-    public void mouseMoved(double p_94758_, double p_94759_) {
-        mouseX = ((float) p_94758_);
-        mouseY = ((float) p_94759_);
-
-        super.mouseMoved(p_94758_, p_94759_);
+    private void addPanel(AbstractPanel... panels) {
+        abstractPanels.addAll(List.of(panels));
     }
-
     public static boolean isHovered(double x, double y, double width, double height) {
         return mouseX >= x && mouseX - width <= x && mouseY >= y && mouseY - height <= y;
     }
+
+
+
     @EventTarget
     public void onRender(RenderSkiaEvent event) {
         if(mc.screen != this) return;
+        MousePoller.update(this);
+
         CanvasStack canvasStack = event.getCanvasStack();
         for (AbstractPanel abstractPanel : abstractPanels) {
             abstractPanel.onRenderFirst(canvasStack);
         }
     }
-    private void addPanel(AbstractPanel... panels) {
-        abstractPanels.addAll(List.of(panels));
-    }
+//    @Override
+//    public void mouseMoved(double p_94758_, double p_94759_) {
+//        mouseX = ((float) p_94758_);
+//        mouseY = ((float) p_94759_);
+//
+////        super.mouseMoved(p_94758_, p_94759_);
+//    }
     @Override
     protected void init() {
         super.init();
     }
 
-    @Override
-    public boolean mouseClicked(double p_94695_, double p_94696_, int p_94697_) {
+
+    public void handleMouseClicked(double p_94695_, double p_94696_, int p_94697_) {
         int i = 0;
         for (AbstractPanel abstractPanel : abstractPanels) {
             if(abstractPanel.getCategory().equals(activeCategory)) {
@@ -88,24 +94,24 @@ public class ClickGuiScreen extends Screen implements IMinecraft {
             if(abstractPanel.getCategory().equals(activeCategory))
                 abstractPanel.mouseClicked(p_94695_, p_94696_, p_94697_);
         }
-        return super.mouseClicked(p_94695_, p_94696_, p_94697_);
     }
 
-    @Override
-    public boolean mouseReleased(double p_94722_, double p_94723_, int p_94724_) {
+
+
+
+    public void handleMouseReleased(double p_94722_, double p_94723_, int p_94724_) {
         for (AbstractPanel abstractPanel : abstractPanels) {
             abstractPanel.mouseReleased(p_94722_, p_94723_, p_94724_);
         }
-       return super.mouseReleased(p_94722_, p_94723_, p_94724_);
     }
 
-    @Override
-    public boolean mouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
+
+    public void handleMouseScrolled(double p_94686_, double p_94687_, double p_94688_) {
         for (AbstractPanel abstractPanel : abstractPanels) {
             if(abstractPanel.getCategory().equals(activeCategory))
                 abstractPanel.mouseScrolled(p_94686_, p_94687_, p_94688_);
         }
-        return super.mouseScrolled(p_94686_, p_94687_, p_94688_);
+
     }
 
     @Override

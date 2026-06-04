@@ -92,17 +92,25 @@ public class ESP2D extends AbstractModule {
                 float posY = espu.topPoint;
                 float endPosX = espu.rightPoint;
                 float endPosY = espu.bottomPoint;
-                Drawing drawing = Drawing.startDrawRect(poseStack);
 
+                Drawing drawing = null;
 
-                int auraColor = Color.WHITE.getRGB();
-                Drawing.drawing(drawing,posX - 0.5D, posY, posX + 0.5D - 0.5D, endPosY, auraColor);
-                Drawing.drawing(drawing,posX, endPosY - 0.5D, endPosX, endPosY, auraColor);
-                Drawing.drawing(drawing,posX - 0.5D, posY, endPosX, posY + 0.5D, auraColor);
-                Drawing.drawing(drawing,endPosX - 0.5D, posY, endPosX, endPosY, auraColor);
+                try {
+                    drawing = Drawing.startDrawRect(poseStack);
 
+                    int auraColor = Color.WHITE.getRGB();
 
-                Drawing.stopDrawingRect(drawing.getTessellator());
+                    Drawing.drawing(drawing, posX - 0.5D, posY, posX, endPosY, auraColor);
+                    Drawing.drawing(drawing, posX, endPosY - 0.5D, endPosX, endPosY, auraColor);
+                    Drawing.drawing(drawing, posX - 0.5D, posY, endPosX, posY + 0.5D, auraColor);
+                    Drawing.drawing(drawing, endPosX - 0.5D, posY, endPosX, endPosY, auraColor);
+
+                } finally {
+                    if (drawing != null) {
+                        Drawing.stopDrawingRect(drawing);
+                    }
+                }
+
 
             }
         }

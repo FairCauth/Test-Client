@@ -3,10 +3,10 @@ package com.test.mod.transformer.process.impl;
 import com.fair.preload.Preloader;
 import com.test.mod.Main;
 import com.test.mod.asm.tree.*;
-import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.TransformerException;
 import com.test.mod.transformer.annotation.Shadow;
-import com.test.mod.transformer.mapping.Mapping;
+import com.test.mod.transformer.mapping.forge.Mapping;
+import com.test.mod.transformer.process.ProcessInfo;
 import com.test.mod.transformer.process.TransformerProcess;
 import com.test.mod.transformer.utils.Tools;
 
@@ -18,21 +18,34 @@ public class ShadowMethodProcess extends TransformerProcess<Shadow, Method> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, Class<? extends ITransformer> iTransformer, Method method, Shadow annotation) {
+    public void process(ProcessInfo processInfo, Method method, Shadow annotation) {
         String desc = annotation.desc();
         if (desc.isEmpty())
             throw new TransformerException("Shadow method desc NULL!!!");
         MethodNode targetMethodNode = null;
-        MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
+        MethodNode mixinMethodNode = Tools.getMethod(processInfo.mixinClassNode(), Tools.toDesc(method), method.getName());
         for (String name : annotation.value()) {
             if(annotation.remap())
-                name = Mapping.get(targetClass, name, desc);
-            targetMethodNode = Tools.getMethod(targetClassNode, desc, name);
+            {
+                if(Main.mcEnvironment == Main.McEnvironment.FORGE_OBF) {
+                    name = Mapping.get(processInfo.targetClass(), name, desc);
+                } else if (Main.mcEnvironment == Main.McEnvironment.VANILLA_OBF) {
+                    String owner = processInfo.originalClassName().replace(".", "/");
+                    name = Main.mapping.mapMethodName(owner, name, desc);
+                    desc = Main.mapping.mapMethodDesc(desc);
+                } else if (Main.mcEnvironment == Main.McEnvironment.FABRIC_OBF) {
+                    String owner = processInfo.originalClassName().replace(".", "/");
+                    name = Main.fabric_mapping.mapMethodName(owner, name, desc);
+                    desc = Main.fabric_mapping.mapMethodDesc(desc);
+                }
+//                name = Mapping.get(targetClass, name, desc);
+            }
+            targetMethodNode = Tools.getMethod(processInfo.targetClassNode(), desc, name);
             if (targetMethodNode != null) break;
         }
         if (targetMethodNode == null || mixinMethodNode == null)
             throw new TransformerException("targetMethodNode or mixinMethodNode NULL!");
-        rewriteOwner(targetClass, targetClassNode, mixinClassNode, method, annotation);
+        rewriteOwner(processInfo.targetClass(), processInfo.targetClassNode(), processInfo.mixinClassNode(), method, annotation);
     }
     private void rewriteOwner(
             Class<?> targetClass,

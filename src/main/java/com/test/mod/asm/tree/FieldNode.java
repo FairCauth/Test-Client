@@ -47,7 +47,7 @@ public class FieldNode extends FieldVisitor {
   /** The field's name. */
   public String name;
 
-  /** The field's descriptor (see {@link org.objectweb.asm.Type}). */
+  /** The field's descriptor (see {@link com.test.mod.asm.Type}). */
   public String desc;
 
   /** The field's signature. May be {@literal null}. */
@@ -82,7 +82,7 @@ public class FieldNode extends FieldVisitor {
    * @param access the field's access flags (see {@link Opcodes}). This parameter
    *     also indicates if the field is synthetic and/or deprecated.
    * @param name the field's name.
-   * @param descriptor the field's descriptor (see {@link org.objectweb.asm.Type}).
+   * @param descriptor the field's descriptor (see {@link com.test.mod.asm.Type}).
    * @param signature the field's signature.
    * @param value the field's initial value. This parameter, which may be {@literal null} if the
    *     field does not have an initial value, must be an {@link Integer}, a {@link Float}, a {@link
@@ -110,7 +110,7 @@ public class FieldNode extends FieldVisitor {
    * @param access the field's access flags (see {@link Opcodes}). This parameter
    *     also indicates if the field is synthetic and/or deprecated.
    * @param name the field's name.
-   * @param descriptor the field's descriptor (see {@link org.objectweb.asm.Type}).
+   * @param descriptor the field's descriptor (see {@link com.test.mod.asm.Type}).
    * @param signature the field's signature.
    * @param value the field's initial value. This parameter, which may be {@literal null} if the
    *     field does not have an initial value, must be an {@link Integer}, a {@link Float}, a {@link

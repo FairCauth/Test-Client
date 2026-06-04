@@ -72,7 +72,7 @@ public class TestModule1 extends AbstractModule {
     public TestModule1() {
         registerSetting(a);
     }
-    public void log(String message) {
+    public static void log(String message) {
         String nameText = "Test >>";
         MutableComponent prefix = Component.literal("");
 

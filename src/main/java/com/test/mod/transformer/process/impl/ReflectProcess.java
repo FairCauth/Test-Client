@@ -1,11 +1,12 @@
 package com.test.mod.transformer.process.impl;
 
+import com.test.mod.Main;
 import com.test.mod.asm.Type;
 import com.test.mod.asm.tree.*;
-import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.TransformerException;
 import com.test.mod.transformer.annotation.Reflect;
-import com.test.mod.transformer.mapping.Mapping;
+import com.test.mod.transformer.mapping.forge.Mapping;
+import com.test.mod.transformer.process.ProcessInfo;
 import com.test.mod.transformer.process.TransformerProcess;
 import com.test.mod.transformer.utils.Tools;
 import com.test.mod.transformer.varhandle.VarHandleCache;
@@ -25,18 +26,34 @@ public class ReflectProcess extends TransformerProcess<Reflect, Method> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode,
-                        ClassNode mixinClassNode,
-                        Class<?> targetClass,
-                        Class<? extends ITransformer> iTransformer,
+    public void process(ProcessInfo processInfo,
                         Method object,
                         Reflect annotation) {
         String fieldName = annotation.value();
-        fieldName = Mapping.get(targetClass,fieldName, null);
+
+        if(Main.mcEnvironment == Main.McEnvironment.FORGE_OBF) {
+            fieldName = Mapping.get(processInfo.targetClass(),fieldName, null);
+        } else if (Main.mcEnvironment == Main.McEnvironment.VANILLA_OBF) {
+            String owner = processInfo.originalClassName().replace(".", "/");
+            System.out.println("ReflectProcess " + fieldName + " "+ owner);
+            fieldName = Main.mapping.mapFieldName(owner, fieldName);
+            System.out.println("TO ReflectProcess " + fieldName);
+
+        } else if (Main.mcEnvironment == Main.McEnvironment.FABRIC_OBF) {
+            String owner = processInfo.originalClassName().replace(".", "/");
+            System.out.println("ReflectProcess " + fieldName + " "+ owner);
+            fieldName = Main.fabric_mapping.mapFieldName(owner, fieldName);
+            System.out.println("TO ReflectProcess " + fieldName);
+
+        }
+
         boolean isMethod = !annotation.desc().isEmpty();
-        if(fieldName == null) return;
+        if(fieldName == null) {
+            System.out.println("FIELD NAME NULL " + "ReflectProcess");
+            return;
+        }
         boolean isStatic = false;
-        String key = targetClass.getName() + "." + fieldName + "." + annotation.desc();
+        String key = processInfo.targetClass().getName() + "." + fieldName + "." + annotation.desc();
         try {
             if (isMethod) {
                 Type r = Type.getMethodType(annotation.desc());
@@ -47,12 +64,12 @@ public class ReflectProcess extends TransformerProcess<Reflect, Method> {
                     paramTypes[i] = Class.forName(argTypes[i].getClassName());
                 }
 
-                Method method = targetClass.getDeclaredMethod(fieldName, paramTypes);
+                Method method = processInfo.targetClass().getDeclaredMethod(fieldName, paramTypes);
                 isStatic = Modifier.isStatic(method.getModifiers());
 
                 MethodHandles.Lookup lookup = MethodHandles.lookup();
                 MethodHandles.Lookup privateLookup =
-                        MethodHandles.privateLookupIn(targetClass, lookup);
+                        MethodHandles.privateLookupIn(processInfo.targetClass(), lookup);
 
                 MethodType methodType =
                         MethodType.methodType(method.getReturnType(), method.getParameterTypes());
@@ -61,13 +78,13 @@ public class ReflectProcess extends TransformerProcess<Reflect, Method> {
 
                 if (isStatic) {
                     methodHandle = privateLookup.findStatic(
-                            targetClass,
+                            processInfo.targetClass(),
                             fieldName,
                             methodType
                     );
                 } else {
                     methodHandle = privateLookup.findVirtual(
-                            targetClass,
+                            processInfo.targetClass(),
                             fieldName,
                             methodType
                     );
@@ -81,15 +98,17 @@ public class ReflectProcess extends TransformerProcess<Reflect, Method> {
                 System.out.println("PUT METHOD CACHE " + key);
                 VarHandleCache.putMethodCache(key, methodHandle);
 
-            }else {
-                Field field = targetClass.getDeclaredField(fieldName);
+            }
+
+            else {
+                Field field = processInfo.targetClass().getDeclaredField(fieldName);
                 Class<?> fieldType = field.getType();
                 isStatic = Modifier.isStatic(field.getModifiers());
                 MethodHandles.Lookup lookup = MethodHandles.lookup();
                 MethodHandles.Lookup privateLookup =
-                        MethodHandles.privateLookupIn(targetClass, lookup);
+                        MethodHandles.privateLookupIn(processInfo.targetClass(), lookup);
                 VarHandle varHandle = privateLookup.findVarHandle(
-                        targetClass, fieldName, fieldType);
+                        processInfo.targetClass(), fieldName, fieldType);
                 if(varHandle == null) {
                     System.out.println("NULL varHandle!!!");
                     return;
@@ -104,7 +123,13 @@ public class ReflectProcess extends TransformerProcess<Reflect, Method> {
 
 
         String[] strings = { object.getName() };
-        MethodNode mixinMethodNode = getTargetMethodNode(mixinClassNode, iTransformer, strings, Tools.toDesc(object), false);
+        ProcessInfo processInfoMixin = new ProcessInfo(
+                processInfo.mixinClassNode(),
+                processInfo.mixinClassNode(),
+                null,
+                null,null
+        );
+        MethodNode mixinMethodNode = getTargetMethodNode(processInfoMixin, strings, Tools.toDesc(object), false);
         if(mixinMethodNode == null) {
             throw new TransformerException("Accessor mixinMethodNode NULL!");
         }

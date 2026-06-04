@@ -37,12 +37,12 @@ import com.test.mod.asm.ClassVisitor;
  */
 public class InnerClassNode {
 
-  /** The internal name of an inner class (see {@link org.objectweb.asm.Type#getInternalName()}). */
+  /** The internal name of an inner class (see {@link com.test.mod.asm.Type#getInternalName()}). */
   public String name;
 
   /**
    * The internal name of the class to which the inner class belongs (see {@link
-   * org.objectweb.asm.Type#getInternalName()}). May be {@literal null}.
+   * com.test.mod.asm.Type#getInternalName()}). May be {@literal null}.
    */
   public String outerName;
 
@@ -59,9 +59,9 @@ public class InnerClassNode {
    * Constructs a new {@link InnerClassNode}.
    *
    * @param name the internal name of an inner class (see {@link
-   *     org.objectweb.asm.Type#getInternalName()}).
+   *     com.test.mod.asm.Type#getInternalName()}).
    * @param outerName the internal name of the class to which the inner class belongs (see {@link
-   *     org.objectweb.asm.Type#getInternalName()}). May be {@literal null}.
+   *     com.test.mod.asm.Type#getInternalName()}). May be {@literal null}.
    * @param innerName the (simple) name of the inner class inside its enclosing class. May be
    *     {@literal null} for anonymous inner classes.
    * @param access the access flags of the inner class as originally declared in the enclosing

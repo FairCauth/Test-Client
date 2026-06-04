@@ -28,6 +28,12 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 import java.awt.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.List;
 
@@ -42,18 +48,17 @@ public class Skeleton extends AbstractModule {
     })
     private final ModeSetting mode = new ModeSetting("Skeleton", Arrays.asList("Skeleton", "Wireframe"));
 
-    @SettingInfo(name = {
-            @Text(label = "Line style", language = Language.English),
-            @Text(label = "Line style", language = Language.Chinese)
-    })
-    private final ModeSetting lineStyle = new ModeSetting("DEBUG", Arrays.asList("LINES", "DEBUG"));
+//    @SettingInfo(name = {
+//            @Text(label = "Line style", language = Language.English),
+//            @Text(label = "Line style", language = Language.Chinese)
+//    })
+//    private final ModeSetting lineStyle = new ModeSetting("DEBUG", Arrays.asList("LINES", "DEBUG"));
 
     public Skeleton() {
-        registerSetting(mode, lineStyle);
+        registerSetting(mode);
     }
     @EventTarget
     public void onRenderLiving(EventRenderLiving evt) {
-
         if(evt.getEventType() != EventType.MIDDLE) return;
         LivingEntity livingEntity = evt.getEntity();
         if(livingEntity instanceof ArmorStand) return;
@@ -64,7 +69,6 @@ public class Skeleton extends AbstractModule {
         int auraColor = Color.WHITE.getRGB();
         List<ESPUtils.Bone> bones = new ArrayList<>();
         Map<ModelPart, ESPUtils.BoneData> boneDataMap = new HashMap<>();
-
         if(entityModel instanceof HumanoidModel<?> playerModel) {
             List<ModelPart> parts = Arrays.asList(
                     playerModel.head,
@@ -186,48 +190,84 @@ public class Skeleton extends AbstractModule {
         }
         renderSkeleton(poseStack,evt.getMultiBufferSource(), evt.getPackedLight(),0, bones, auraColor);
     }
+    public static String throwableToString(Throwable t) {
+        if (t == null) {
+            return "null";
+        }
 
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
 
+        t.printStackTrace(pw);
+
+        return sw.toString();
+    }
+
+    public static void writeErrorToFile(Throwable t) {
+        try {
+            Path path = Path.of("D:\\MineCraft\\versions\\1.20.1-Forge_47.3.0\\mods\\error-log.txt");
+
+            String text = throwableToString(t);
+
+            Files.writeString(
+                    path,
+                    text,
+                    StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+            );
+
+        } catch (Throwable ignored) {
+        }
+    }
     public void renderSkeleton(PoseStack poseStack, MultiBufferSource bufferSource,
                                       int packedLight, int packedOverlay, List<ESPUtils.Bone> bones, int color) {
+        VertexConsumer vertexConsumer = null;
+        try {
+            vertexConsumer = bufferSource.getBuffer(ESPUtils.DEBUG_LINES);
 
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(lineStyle.getValue().equals("LINES") ? ESPUtils.LINES : ESPUtils.DEBUG_LINES);
+        }catch (Throwable throwable) {
+            writeErrorToFile(throwable);
+            throwable.printStackTrace();
+        }
+        if(vertexConsumer == null) return;
         Matrix4f matrix = poseStack.last().pose();
         for (ESPUtils.Bone bone : bones) {
             Vec3 start = bone.start();
             Vec3 end = bone.end();
-            if(lineStyle.getValue().equals("LINES")) {
-                Vec3 dir = end.subtract(start).normalize();
-
-                vertexConsumer.vertex(matrix, (float)start.x, (float)start.y, (float)start.z)
-                        .color((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF)
-                        .normal((float)dir.x, (float)dir.y, (float)dir.z)
-                        .endVertex();
-
-                vertexConsumer.vertex(matrix, (float)end.x, (float)end.y, (float)end.z)
-                        .color((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF)
-                        .normal((float)dir.x, (float)dir.y, (float)dir.z)
-                        .endVertex();
-
-            }else {
-
-                vertexConsumer.vertex(matrix, (float) start.x, (float) start.y, (float) start.z)
-                        .color((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF)
-                        .uv(0, 0)
-                        .overlayCoords(packedOverlay)
-                        .uv2(packedLight)
-                        .normal(0.0f, 0, 0.0f)
-                        .endVertex();
+            vertexConsumer.vertex(matrix, (float) start.x, (float) start.y, (float) start.z)
+                    .color((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF)
+                    .uv(0, 0)
+                    .overlayCoords(packedOverlay)
+                    .uv2(packedLight)
+                    .normal(0.0f, 0, 0.0f)
+                    .endVertex();
 
 
-                vertexConsumer.vertex(matrix, (float) end.x, (float) end.y, (float) end.z)
-                        .color((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF)
-                        .uv(0, 0)
-                        .overlayCoords(packedOverlay)
-                        .uv2(packedLight)
-                        .normal(0.0f, 0, 0.0f)
-                        .endVertex();
-            }
+            vertexConsumer.vertex(matrix, (float) end.x, (float) end.y, (float) end.z)
+                    .color((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF)
+                    .uv(0, 0)
+                    .overlayCoords(packedOverlay)
+                    .uv2(packedLight)
+                    .normal(0.0f, 0, 0.0f)
+                    .endVertex();
+//            if(lineStyle.getValue().equals("LINES")) {
+//                    Vec3 dir = end.subtract(start).normalize();
+//
+//                    vertexConsumer.vertex(matrix, (float)start.x, (float)start.y, (float)start.z)
+//                            .color((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF)
+//                            .normal((float)dir.x, (float)dir.y, (float)dir.z)
+//                            .endVertex();
+//
+//                    vertexConsumer.vertex(matrix, (float)end.x, (float)end.y, (float)end.z)
+//                            .color((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF, (color >> 24) & 0xFF)
+//                            .normal((float)dir.x, (float)dir.y, (float)dir.z)
+//                            .endVertex();
+//
+//                }else {
+//
+//                }
+
 
         }
     }

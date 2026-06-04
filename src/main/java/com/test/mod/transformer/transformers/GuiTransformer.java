@@ -3,15 +3,12 @@ package com.test.mod.transformer.transformers;
 import com.darkmagician6.eventapi.EventManager;
 import com.test.mod.events.EventRender2D;
 import com.test.mod.transformer.ITransformer;
-import com.test.mod.transformer.annotation.At;
-import com.test.mod.transformer.annotation.ClassTransformer;
-import com.test.mod.transformer.annotation.Inject;
-import com.test.mod.transformer.annotation.Local;
+import com.test.mod.transformer.annotation.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-
-@ClassTransformer(Gui.class)
+@ClassNameTransformer("net.minecraft.client.gui.Gui")
+//@ClassTransformer(Gui.class)
 public class GuiTransformer implements ITransformer {
     //m_280518_
     @Inject(at = @At(value = "TAIL"), methodName = {"renderHotbar"}, desc = "(FLnet/minecraft/client/gui/GuiGraphics;)V")

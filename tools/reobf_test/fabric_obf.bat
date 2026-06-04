@@ -1,0 +1,1 @@
+java -jar tiny-remapper-0.13.1-fat.jar input-reobf.jar output-fabric-intermediary.jar mappings.tiny official intermediary 1.20.1-vanilla.jar

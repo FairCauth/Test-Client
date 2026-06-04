@@ -5,10 +5,10 @@ import com.test.mod.Main;
 import com.test.mod.asm.Opcodes;
 import com.test.mod.asm.Type;
 import com.test.mod.asm.tree.*;
-import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.TransformerException;
 import com.test.mod.transformer.annotation.Shadow;
-import com.test.mod.transformer.mapping.Mapping;
+import com.test.mod.transformer.mapping.forge.Mapping;
+import com.test.mod.transformer.process.ProcessInfo;
 import com.test.mod.transformer.process.TransformerProcess;
 import com.test.mod.transformer.utils.Tools;
 
@@ -21,15 +21,28 @@ public class ShadowFieldProcess extends TransformerProcess<Shadow, Field> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode, ClassNode mixinClassNode,Class<?> targetClass, Class<? extends ITransformer> iTransformer, Field field, Shadow annotation) {
+    public void process(ProcessInfo processInfo, Field field, Shadow annotation) {
         String fieldName = field.getName();
         String fieldDesc = Type.getDescriptor(field.getType());
 
         FieldNode targetField = null;
         for (String s : annotation.value()) {
             if(annotation.remap())
-                s = Mapping.get(targetClass, s, null);
-            targetField = Tools.getField(targetClassNode, fieldDesc, s);
+            {
+                if(Main.mcEnvironment == Main.McEnvironment.FORGE_OBF) {
+                    s = Mapping.get(processInfo.targetClass(), s, null);
+                } else if (Main.mcEnvironment == Main.McEnvironment.VANILLA_OBF) {
+                    String owner = processInfo.originalClassName().replace(".", "/");
+                    s = Main.mapping.mapFieldName(owner, s, fieldDesc);
+                    fieldDesc = Main.mapping.mapDesc(fieldDesc);
+                } else if (Main.mcEnvironment == Main.McEnvironment.FABRIC_OBF) {
+                    String owner = processInfo.originalClassName().replace(".", "/");
+                    s = Main.fabric_mapping.mapFieldName(owner, s, fieldDesc);
+                    fieldDesc = Main.fabric_mapping.mapDesc(fieldDesc);
+                }
+//                s = Mapping.get(targetClass, s, null);
+            }
+            targetField = Tools.getField(processInfo.targetClassNode(), fieldDesc, s);
             if (targetField != null) break;
         }
         if (targetField == null)
@@ -41,7 +54,7 @@ public class ShadowFieldProcess extends TransformerProcess<Shadow, Field> {
             throw new TransformerException("Shadow static mismatch: " + fieldName);
 
 
-        rewriteOwner(targetClass, targetClassNode, mixinClassNode, field, annotation);
+        rewriteOwner(processInfo.targetClass(), processInfo.targetClassNode(), processInfo.mixinClassNode(), field, annotation);
     }
     private void rewriteOwner(
             Class<?> targetClass,

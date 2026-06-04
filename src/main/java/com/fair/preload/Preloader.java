@@ -1,5 +1,6 @@
 package com.fair.preload;
 
+import com.test.mod.Main;
 import sun.misc.Unsafe;
 
 import java.io.BufferedReader;
@@ -102,18 +103,19 @@ public class Preloader extends Thread {
     public static String MAIN_PATH = "C:\\Test\\lib";
 
     public static String CORE_DLL = "Core.dll";
-    public byte[][] classes;
+//    public byte[][] classes;
+//    public ClassLoader classLoader;
     public static Class<?> mainClazz = null;
-    public ClassLoader classLoader;
-    public static void run(byte[][] classes, ClassLoader classLoader) {
-        Preloader agentNative = new Preloader();
-        agentNative.classLoader = classLoader;
-        agentNative.classes = classes;
+
+    public static Preloader agentNative = null;
+    public static void init() {
+        agentNative = new Preloader();
         agentNative.start();
     }
     public static byte[][] getByteArray(int size) {
         return new byte[size][];
     }
+
     public static boolean reconnect(String host, int port) {
 //        try {
 //            cleanup();
@@ -133,13 +135,23 @@ public class Preloader extends Thread {
             MAIN_PATH = sendAndWait("run!");
             CORE_DLL = sendAndWait("ask_dll_name");
             startListening();
+
+
             send("path " + MAIN_PATH + " DLL " + CORE_DLL);
 
         }
 
-
+        int mc_ver = detect();
+        send("mc_ver " + mc_ver);
         System.load(MAIN_PATH + "\\" + CORE_DLL);
         log("DIRS " + MAIN_PATH + " " + CORE_DLL);
+        try {
+            Thread.sleep(1000);
+        }catch (Exception e) {
+
+        }
+        byte[][] classes = getClassByte(mc_ver);
+        ClassLoader classLoader = getClassLoader();
         try {
             Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
             Field field = unsafeClass.getDeclaredField("theUnsafe");
@@ -165,7 +177,7 @@ public class Preloader extends Thread {
                 continue;
             }
 
-            if (clazz.getName().contains("com.test.mod.Main"))
+            if (clazz.getName().equals("com.test.mod.Main"))
                 mainClazz = clazz;
         }
         if (mainClazz == null) {
@@ -177,11 +189,38 @@ public class Preloader extends Thread {
             log("[Loader] tryInvoke");
             Method method = mainClazz.getDeclaredMethod("attach");
             method.invoke(null);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log("[Loader] " + e.getMessage());
             e.printStackTrace();
         }
     }
+    //0 no obf
+    //1 vanilla
+    //2 forge
+    //3 fabric
+    public static int detect() {
+        Class<?> clazz;
+        try {
+            clazz = Class.forName("net.minecraft.client.Minecraft");
+        } catch (Throwable ignored) {
+            try {
+                //net.minecraft.class_310
+                clazz = Class.forName("net.minecraft.class_310");
+                return 3;//fabric
+            }catch (Throwable ignored1) {
+                return 1;//vanilla
+            }
+
+        }
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.getName().equals("getInstance")) {
+                return 0;//no obf
+            }
+        }
+        return 2;//forge
+    }
+    public static native ClassLoader getClassLoader();
+    public static native byte[][] getClassByte(int mc_ver);
     public static native void log(String string);
     public static native Class<?> defineClass(byte[] clazz);
 

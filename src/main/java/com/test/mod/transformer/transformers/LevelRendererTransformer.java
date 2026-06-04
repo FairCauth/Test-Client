@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.test.mod.events.EventRender3D;
 import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.annotation.At;
+import com.test.mod.transformer.annotation.ClassNameTransformer;
 import com.test.mod.transformer.annotation.ClassTransformer;
 import com.test.mod.transformer.annotation.Inject;
 import net.minecraft.client.Camera;
@@ -14,8 +15,8 @@ import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.joml.Matrix4f;
-
-@ClassTransformer(LevelRenderer.class)
+@ClassNameTransformer("net.minecraft.client.renderer.LevelRenderer")
+//@ClassTransformer(LevelRenderer.class)
 public class LevelRendererTransformer implements ITransformer {
     @Inject(methodName = {"renderLevel", "m_109599_"},
             desc = "(Lcom/mojang/blaze3d/vertex/PoseStack;FJZLnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/GameRenderer;Lnet/minecraft/client/renderer/LightTexture;Lorg/joml/Matrix4f;)V",

@@ -1,5 +1,6 @@
 package com.test.mod.transformer.utils;
 
+import com.test.mod.Main;
 import com.test.mod.asm.Opcodes;
 import com.test.mod.asm.Type;
 import com.test.mod.asm.tree.AbstractInsnNode;
@@ -7,7 +8,7 @@ import com.test.mod.asm.tree.FieldInsnNode;
 import com.test.mod.asm.tree.MethodInsnNode;
 import com.test.mod.asm.tree.MethodNode;
 import com.test.mod.transformer.annotation.At;
-import com.test.mod.transformer.mapping.Mapping;
+import com.test.mod.transformer.mapping.forge.Mapping;
 import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
@@ -77,6 +78,7 @@ public class PointFinder {
     }
 
     private TargetInfo parseAndMap(String target) {
+        System.out.println("START parse " + target);
         String tOwner = null;
         String tName = target;
         String tDesc = null;
@@ -111,18 +113,38 @@ public class PointFinder {
         String mappedDesc = null;
 
         if (tOwner != null) {
-            mappedOwner = Mapping.getInternalName(tOwner);
             try {
-                Class<?> clazz = Class.forName(tOwner.replace("/", "."));
-                mappedName = Mapping.get(clazz, tName, tDesc);
+                if(Main.mcEnvironment == Main.McEnvironment.FORGE_OBF){
+                    Class<?> clazz = Class.forName(tOwner.replace("/", "."));
+                    mappedOwner = Mapping.getInternalName(tOwner);
+                    mappedName = Mapping.get(clazz, tName, tDesc);
+                    if (tDesc != null) {
+                        mappedDesc = mapDesc(tDesc);
+                    }
+
+                }
+                else if (Main.mcEnvironment == Main.McEnvironment.VANILLA_OBF) {
+                    mappedOwner = Main.mapping.map(tOwner);
+                    mappedName = Main.mapping.mapMethodName(tOwner, tName, tDesc);
+                    if (tDesc != null) {
+                        mappedDesc = Main.mapping.mapDesc(tDesc);
+                    }
+
+                }
+                else if (Main.mcEnvironment == Main.McEnvironment.FABRIC_OBF) {
+                    mappedOwner = Main.fabric_mapping.map(tOwner);
+                    mappedName = Main.fabric_mapping.mapMethodName(tOwner, tName, tDesc);
+                    if (tDesc != null) {
+                        mappedDesc = Main.fabric_mapping.mapDesc(tDesc);
+                    }
+
+                }
             } catch (ClassNotFoundException ignored) {
                 // ?
             }
         }
 
-        if (tDesc != null) {
-            mappedDesc = mapDesc(tDesc);
-        }
+        System.out.println("END parse || " + mappedOwner + " " + mappedName + " " + mappedDesc);
 
         return new TargetInfo(mappedOwner, mappedName, mappedDesc);
     }

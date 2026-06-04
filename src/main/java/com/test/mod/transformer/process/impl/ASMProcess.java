@@ -1,11 +1,9 @@
 package com.test.mod.transformer.process.impl;
 
-import com.test.mod.asm.tree.ClassNode;
 import com.test.mod.asm.tree.MethodNode;
-import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.TransformerException;
 import com.test.mod.transformer.annotation.ASM;
-import com.test.mod.transformer.mapping.Mapping;
+import com.test.mod.transformer.process.ProcessInfo;
 import com.test.mod.transformer.process.TransformerProcess;
 import com.test.mod.transformer.utils.Tools;
 
@@ -18,16 +16,10 @@ public class ASMProcess extends TransformerProcess<ASM, Method> {
     }
 
     @Override
-    public void process(ClassNode targetClassNode,
-                        ClassNode mixinClassNode,
-                        Class<?> targetClass,
-                        Class<? extends ITransformer> iTransformer,
-                        Method method,
-                        ASM asm
-    ) {
+    public void process(ProcessInfo processInfo, Method method, ASM asm) {
         String desc = asm.desc();
-        MethodNode targetMethodNode = getTargetMethodNode(targetClassNode, targetClass, asm.methodName(), desc, true);
-        MethodNode mixinMethodNode = Tools.getMethod(mixinClassNode, Tools.toDesc(method), method.getName());
+        MethodNode targetMethodNode = getTargetMethodNode(processInfo, asm.methodName(), desc, true);
+        MethodNode mixinMethodNode = Tools.getMethod(processInfo.mixinClassNode(), Tools.toDesc(method), method.getName());
 
         if (targetMethodNode == null || mixinMethodNode == null)
             throw new TransformerException("targetMethodNode or mixinMethodNode NULL!");
@@ -37,4 +29,6 @@ public class ASMProcess extends TransformerProcess<ASM, Method> {
             e.printStackTrace();
         }
     }
+
+
 }

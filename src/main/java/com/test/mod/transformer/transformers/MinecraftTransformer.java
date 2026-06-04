@@ -3,8 +3,8 @@ package com.test.mod.transformer.transformers;
 import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.annotation.*;
 import net.minecraft.client.Minecraft;
-
-@ClassTransformer(Minecraft.class)
+@ClassNameTransformer("net.minecraft.client.Minecraft")
+//@ClassTransformer(Minecraft.class)
 public class MinecraftTransformer implements ITransformer {
     @Reflect("isLocalServer")
     public native static boolean isLocalServer(Minecraft instance);

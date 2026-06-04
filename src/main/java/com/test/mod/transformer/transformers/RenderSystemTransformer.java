@@ -6,10 +6,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.test.mod.Main;
 import com.test.mod.transformer.ITransformer;
 import com.test.mod.transformer.annotation.At;
+import com.test.mod.transformer.annotation.ClassNameTransformer;
 import com.test.mod.transformer.annotation.ClassTransformer;
 import com.test.mod.transformer.annotation.Inject;
-
-@ClassTransformer(RenderSystem.class)
+@ClassNameTransformer("com.mojang.blaze3d.systems.RenderSystem")
+//@ClassTransformer(RenderSystem.class)
 public class RenderSystemTransformer implements ITransformer {
     @Inject(methodName = {"flipFrame"}, desc = "(J)V", at =
         @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwSwapBuffers(J)V")

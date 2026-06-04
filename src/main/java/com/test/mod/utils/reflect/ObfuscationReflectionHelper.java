@@ -1,7 +1,7 @@
 package com.test.mod.utils.reflect;
 
 import com.test.mod.asm.Type;
-import com.test.mod.transformer.mapping.Mapping;
+import com.test.mod.transformer.mapping.forge.Mapping;
 import com.google.common.base.Preconditions;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
