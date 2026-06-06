@@ -1,10 +1,11 @@
 # Test Client
 一个完全开源的1.20.1 可注入式客户端Base
-支持的版本
-1.20.1 Forge
-1.20.1 Fabric
-1.20.1 Vanilla
-
+## 支持的版本
+| Name | Version |
+|------|---------|
+| Forge | 1.20.1 |
+| Fabric | 1.20.1 | 
+| Vanilla | 1.20.1 |
 ### 游戏截图
 ![截图](assets/screenshot1.png)
 
