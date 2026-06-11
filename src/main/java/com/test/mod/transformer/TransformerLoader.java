@@ -42,7 +42,8 @@ public class TransformerLoader {
                 GuiTransformer.class,
                 LevelRendererTransformer.class,
                 SpiderModelTransformer.class,
-                CreeperModelTransformer.class
+                CreeperModelTransformer.class,
+                ItemInHandRendererTransformer.class
         );
 
         try {

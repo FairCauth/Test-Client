@@ -44,7 +44,7 @@ public class ShadowMethodProcess extends TransformerProcess<Shadow, Method> {
             if (targetMethodNode != null) break;
         }
         if (targetMethodNode == null || mixinMethodNode == null)
-            throw new TransformerException("targetMethodNode or mixinMethodNode NULL!");
+            throw new TransformerException("targetMethodNode or mixinMethodNode NULL! " + method.getName());
         rewriteOwner(processInfo.targetClass(), processInfo.targetClassNode(), processInfo.mixinClassNode(), method, annotation);
     }
     private void rewriteOwner(

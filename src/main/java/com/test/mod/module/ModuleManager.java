@@ -4,6 +4,7 @@ import com.darkmagician6.eventapi.EventManager;
 import com.darkmagician6.eventapi.EventTarget;
 import com.test.mod.events.EventKey;
 import com.test.mod.module.modules.combat.AimAssist;
+import com.test.mod.module.modules.combat.Reach;
 import com.test.mod.module.modules.combat.Test;
 import com.test.mod.module.modules.misc.ExternalGui;
 import com.test.mod.module.modules.misc.SelfDestruct;
@@ -22,9 +23,11 @@ public class ModuleManager {
 
     public ModuleManager() {
         add(new ClickGui());
-        add(new Skeleton());
+        add(new Skeleton(), new Reach());
         add(new Test(), new AimAssist());
         add(new Backtrack(), new NoSlow(), new NameTags(), new TestModule1(), new ESP2D(), new SelfDestruct(), new ExternalGui());
+        add(new BlockAnimation());
+
         EventManager.register(this);
     }
     public AbstractModule getModule(String name) {
