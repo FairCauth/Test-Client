@@ -1,5 +1,7 @@
 # Test Client
 
+[简体中文](README.md) | [English](README_EN.md)
+
 一个完全开源的1.20.1 可注入式客户端Base
 
 ## 支持的版本
