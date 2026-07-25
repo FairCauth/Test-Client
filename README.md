@@ -36,6 +36,104 @@ flowchart LR
 
 ## 构建视频教程
 https://b23.tv/sqG10CV
+
+## 快速开始
+
+### 环境要求
+
+开始构建前，请确保已安装：
+
+- Java 17
+- Git
+- IntelliJ IDEA（推荐）
+
+### 构建项目
+
+在项目根目录运行：
+
+```bat
+
+gradlew.bat buildCompileJars
+
+```
+
+也可以在 IntelliJ IDEA 右侧的 Gradle 面板中运行：
+
+```text
+
+Tasks
+
+└── release
+
+    └── buildCompileJars
+
+```
+
+`buildCompileJars` 会自动构建项目所需的不同版本文件，包括：
+
+- Development
+
+- Forge
+
+- Vanilla
+
+- Fabric
+
+构建完成后，生成的文件会被输出到项目根目录下的：
+
+```text
+
+compile/
+
+```
+
+输出内容通常包括：
+
+```text
+
+compile/
+
+├── *-dev.jar
+
+├── *-forge.jar
+
+├── *-vanilla.jar
+
+├── *-fabric.jar
+
+├── noobf.pack
+
+├── forge.pack
+
+├── vanilla.pack
+
+└── fabric.pack
+
+```
+
+其中：
+
+| 文件 | 用途 |
+
+|---|---|
+
+| `*-dev.jar` | 用于开发环境或未混淆环境 |
+
+| `*-forge.jar` | 用于 Forge 环境 |
+
+| `*-vanilla.jar` | 用于 Vanilla 原版混淆环境 |
+
+| `*-fabric.jar` | 用于 Fabric 环境 |
+
+| `*.pack` | 提供给 Core DLL 加载的打包文件 |
+
+> [!IMPORTANT]
+
+> 请运行 `buildCompileJars`，不要只运行普通的 `build` 或 `jar` 任务。  
+
+> `buildCompileJars` 会自动完成不同运行环境的构建、重映射和打包流程。
+
+
 # Part1 功能介绍
 - 支持 MOD 启动模式与 DLL 注入模式双启动
 - 注入基于jvmti无需java agent
